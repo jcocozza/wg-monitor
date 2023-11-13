@@ -49,11 +49,15 @@ function updatePeerMetaStatus(data){
         var latesthandshake = document.getElementById(peerId + "-latesthandshake");
         var transfer = document.getElementById(peerId + "-transfer");
 
+        var loadingPeer = document.getElementById(peerId + "-index")
+
         if (peer.MetaStatus) {
-            peerMetaStatus.innerHTML = 'Status: <span class="statusDot online"></span>';
+            loadingPeer.setAttribute("aria-busy", "false");
+            peerMetaStatus.innerHTML = '<span class="statusDot online"></span>';
     
         } else {
-            peerMetaStatus.innerHTML = 'Status: <span class="statusDot offline"></span>';
+            loadingPeer.setAttribute("aria-busy", "false");
+            peerMetaStatus.innerHTML = '<span class="statusDot offline"></span>';
         }
 
         publickey.innerHTML = peer.PublicKey;     

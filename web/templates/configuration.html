@@ -25,17 +25,16 @@
 
     <h4>Total Clients: {{ len .interface.Peers }}</h4>
 
-    <input type="checkbox" role="switch" id="toggle-switch" onclick="toggleClass('grid-container', 'new-class', 'peers')">
-    <label for="toggle-switch"> Row-Grid </label>
-
     <div id="peers", class="grid-container">
         {{ range $index, $peer := .interface.Peers }}
         <div class="peer">
             <details>
                 <summary>
-                    Peer: {{ $index }}
+                    <span id="{{ $peer.PublicKey }}-index" aria-busy="true">
+                        Peer: {{ $index }}
+                    </span>
                     <span id="{{ $peer.PublicKey }}-MetaStatus" class="peerStatus">
-                        Status: <span class="statusDot offline"></span>
+                        <span class="statusDot offline"></span>
                     </span>
                 </summary>
                     <span id="{{ $peer.PublicKey }}-publickey">{{ $peer.PublicKey }}</span>
@@ -47,6 +46,8 @@
         </div>
         {{ end }}
     </div>
+    <input type="checkbox" role="switch" id="toggle-switch" onclick="toggleClass('grid-container', 'new-class', 'peers')">
+    <label for="toggle-switch"> Row-Grid </label>
 </body>
 
 <script>
@@ -57,6 +58,7 @@
         setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
     });*/
     document.addEventListener('DOMContentLoaded', function() {
+        getPeerMetaStatus("{{ .interface.Name }}");
         setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
     });
 </script>
