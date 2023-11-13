@@ -3,6 +3,7 @@ package wireguard
 import (
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/go-ping/ping"
@@ -48,17 +49,32 @@ type Peer struct {
 	AllowedIPs []string
 	LatestHandshake string
 	Transfer []string
+	Sent string
+	Recieved string
 	Status map[string]bool
 	MetaStatus bool
 }
 
 func NewPeer(publicKey string, endPoint string, allowedIPs []string, latestHandshake string, transfer []string) *Peer {
+	var recieved string
+	var sent string
+	if len(transfer) > 0 {
+		recieved = strings.TrimSuffix(transfer[0], " received")
+		sent = strings.TrimSuffix(transfer[1], " sent")
+
+	} else {
+		recieved = "0 Mib"
+		sent = "0 Mib"
+	}
+
 	p := &Peer{
 		PublicKey: publicKey,
 		EndPoint: endPoint,
 		AllowedIPs: allowedIPs,
 		LatestHandshake: latestHandshake,
 		Transfer: transfer,
+		Recieved: recieved,
+		Sent: sent,
 		MetaStatus: false,
 	}
 	
