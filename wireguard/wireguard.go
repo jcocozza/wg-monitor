@@ -58,19 +58,19 @@ func parseWgOut(wgInput []byte) []Interface {
 				endPoint = strings.TrimSpace(lines[i+1])
 
 				ips := strings.TrimPrefix(strings.TrimSpace(lines[i+2]), "allowed ips: ")
-				ipList = strings.SplitAfter(ips, ",")
+				ipList = strings.Split(ips, ",")//strings.SplitAfter(ips, ",")
 
 				latestHandshake = strings.TrimSpace(lines[i+3])
 
-				transfers := strings.TrimSpace(lines[i+4])
-				transfer = strings.SplitAfter(transfers, ",")
+				transfers := strings.TrimPrefix(strings.TrimSpace(lines[i+4]), "transfer: ")
+				transfer = strings.Split(transfers, ",") //SplitAfter(transfers, ",")
 
 
 			} else { // if the peer has NOT connected to the server since it started
 				endPoint = ""
 
 				ips := strings.TrimPrefix(strings.TrimSpace(lines[i+1]), "allowed ips: ")
-				ipList = strings.SplitAfter(ips, ",")
+				ipList = strings.Split(ips, ",")//strings.SplitAfter(ips, ",")
 
 				latestHandshake = ""
 
