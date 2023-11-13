@@ -1,0 +1,64 @@
+{{ template "header.html" .}}
+<head>
+    <title>{{ .interfaceName }} - WireGuard Monitor </title>
+</head>
+<body>
+    <h2> {{ .interface.Name }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Public Key</th>
+                <th>IPAddress</th>
+                <th>Listen Port</th>
+                <th>Data Info</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ .interface.PublicKey }}</td>
+                <td>{{ .interface.IPAddress }}</td>
+                <td>{{ .interface.ListeningPort }}</td>
+                <td> ***** </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Total Clients: {{ len .interface.Peers }}</h4>
+
+    <input type="checkbox" role="switch" id="toggle-switch" onclick="toggleClass('grid-container', 'new-class', 'peers')">
+    <label for="toggle-switch"> Row-Grid </label>
+
+    <div id="peers", class="grid-container">
+        {{ range $index, $peer := .interface.Peers }}
+        <div class="peer">
+            <details>
+                <summary>
+                    Peer: {{ $index }}
+                    <span id="{{ $peer.PublicKey }}-MetaStatus" class="peerStatus">
+                        Status: <span class="statusDot offline"></span>
+                    </span>
+                </summary>
+                    <span id="{{ $peer.PublicKey }}-publickey">{{ $peer.PublicKey }}</span>
+                    <span id="{{ $peer.PublicKey }}-endpoint">{{ $peer.EndPoint }}</span>
+                    <span id="{{ $peer.PublicKey }}-allowedips">{{ $peer.AllowedIPs }}</span>
+                    <span id="{{ $peer.PublicKey }}-latesthandshake">{{ $peer.LatestHandshake }}</span>
+                    <span id="{{ $peer.PublicKey }}-transfer">{{ $peer.Transfer }}</span>
+            </details>
+        </div>
+        {{ end }}
+    </div>
+</body>
+
+<script>
+    /*
+    document.addEventListener('DOMContentLoaded', function() {
+        var interfaceName = document.getElementById("peerStatusButton").getAttribute("data-interface-name")
+        //getPeerMetaStatus(interfaceName)
+        setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
+    });*/
+    document.addEventListener('DOMContentLoaded', function() {
+        setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
+    });
+</script>
+
+{{ template "footer.html" .}}
