@@ -55,12 +55,12 @@ func parseWgOut(wgInput []byte) []Interface {
 			publicKey := strings.TrimPrefix(line, "peer: ")
 
 			if strings.HasPrefix(strings.TrimSpace(lines[i+1]), "endpoint: ") {
-				endPoint = strings.TrimSpace(lines[i+1])
+				endPoint = strings.TrimPrefix(strings.TrimSpace(lines[i+1]), "endpoint: ")
 
 				ips := strings.TrimPrefix(strings.TrimSpace(lines[i+2]), "allowed ips: ")
 				ipList = strings.Split(ips, ",")//strings.SplitAfter(ips, ",")
 
-				latestHandshake = strings.TrimSpace(lines[i+3])
+				latestHandshake = strings.TrimPrefix(strings.TrimSpace(lines[i+3]), "latest handshake: ")
 
 				transfers := strings.TrimPrefix(strings.TrimSpace(lines[i+4]), "transfer: ")
 				transfer = strings.Split(transfers, ",") //SplitAfter(transfers, ",")

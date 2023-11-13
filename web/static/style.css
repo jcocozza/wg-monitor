@@ -60,4 +60,40 @@
   background-color: red;
 }
 
+.transfer-info {
+  display: flex;
+}
 
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas:
+      "publickey"
+      "latesthandshake" "endpoint"
+      "allowedips allowedips";
+  gap: 10px;
+}
+
+.publickey {
+  grid-area: publickey;
+}
+
+.latesthandshake {
+  grid-area: latesthandshake;
+}
+
+.sent {
+  grid-area: sent;
+}
+.recieved {
+  grid-area: recieved;
+}
+
+.endpoint {
+  grid-area: endpoint;
+}
+
+.allowedips {
+  grid-area: allowedips;
+}

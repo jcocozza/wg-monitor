@@ -47,7 +47,8 @@ function updatePeerMetaStatus(data){
         var endpoint = document.getElementById(peerId + "-endpoint");
         var allowedips = document.getElementById(peerId + "-allowedips");
         var latesthandshake = document.getElementById(peerId + "-latesthandshake");
-        var transfer = document.getElementById(peerId + "-transfer");
+        var sent = document.getElementById(peerId + "-sent");
+        var recieved = document.getElementById(peerId + "-recieved");
 
         var loadingPeer = document.getElementById(peerId + "-index")
 
@@ -64,7 +65,8 @@ function updatePeerMetaStatus(data){
         endpoint.innerHTML = peer.EndPoint; 
         allowedips.innerHTML = peer.AllowedIPs; 
         latesthandshake.innerHTML = peer.LatestHandshake; 
-        transfer.innerHTML = peer.Transfer; 
+        sent.innerHTML = peer.Sent; 
+        recieved.innerHTML = peer.Recieved; 
 
     })
 }

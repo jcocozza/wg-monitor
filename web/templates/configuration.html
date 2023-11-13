@@ -35,13 +35,31 @@
                     </span>
                     <span id="{{ $peer.PublicKey }}-MetaStatus" class="peerStatus">
                         <span class="statusDot offline"></span>
-                    </span>
+                    </span><br>
+                    <div class="transfer-info">
+                        <div class="sent">
+                            <span id="{{ $peer.PublicKey }}-sent">{{ $peer.Sent }}</span> <span style="color: purple;">&#8682;</span> 
+                        </div>
+                        <div class="recieved">
+                            <span id="{{ $peer.PublicKey }}-recieved">{{ $peer.Recieved }}</span> <span style="color: blue;">&#8681;</span> 
+                        </div>
+                    </div>
                 </summary>
-                    <span id="{{ $peer.PublicKey }}-publickey">{{ $peer.PublicKey }}</span>
-                    <span id="{{ $peer.PublicKey }}-endpoint">{{ $peer.EndPoint }}</span>
-                    <span id="{{ $peer.PublicKey }}-allowedips">{{ $peer.AllowedIPs }}</span>
-                    <span id="{{ $peer.PublicKey }}-latesthandshake">{{ $peer.LatestHandshake }}</span>
-                    <span id="{{ $peer.PublicKey }}-transfer">{{ $peer.Transfer }}</span>
+
+                <div class="peer-info-container">
+                    <div class="publickey">
+                        Public Key: <span id="{{ $peer.PublicKey }}-publickey">{{ $peer.PublicKey }}</span>
+                    </div>
+                    <div class="latesthandshake">
+                        Latest Handshake: <span id="{{ $peer.PublicKey }}-latesthandshake">{{ $peer.LatestHandshake }}</span>
+                    </div>
+                    <div class="endpoint">
+                        Endpoint: <span id="{{ $peer.PublicKey }}-endpoint">{{ $peer.EndPoint }}</span>
+                    </div>
+                    <div class="allowedips">
+                        Allowed IPs: <span id="{{ $peer.PublicKey }}-allowedips">{{ $peer.AllowedIPs }}</span>
+                    </div>
+                </div>
             </details>
         </div>
         {{ end }}
