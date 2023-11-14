@@ -16,8 +16,8 @@
         <tbody>
             <tr>
                 <td>{{ .interface.PublicKey }}</td>
-                <td>{{ .interface.IPAddress }}</td>
-                <td>{{ .interface.ListeningPort }}</td>
+                <td>{{ .interface.Address }}</td>
+                <td>{{ .interface.ListenPort }}</td>
                 <td> ***** </td>
             </tr>
         </tbody>
@@ -31,17 +31,17 @@
             <details>
                 <summary>
                     <span id="{{ $peer.PublicKey }}-index" aria-busy="true">
-                        Peer: {{ $index }}
+                        Peer: {{ $peer.Name }}
                     </span>
-                    <span id="{{ $peer.PublicKey }}-MetaStatus" class="peerStatus">
+                    <span id="{{ $peer.PublicKey }}-status" class="peerStatus">
                         <span class="statusDot offline"></span>
                     </span><br>
                     <div class="transfer-info">
                         <div class="sent">
-                            <span id="{{ $peer.PublicKey }}-sent">{{ $peer.Sent }}</span> <span style="color: purple;">&#8682;</span> 
+                            <span id="{{ $peer.PublicKey }}-sent">{{ $peer.Info.Transfer.Sent }}</span> <span style="color: purple;">&#8682;</span> 
                         </div>
-                        <div class="recieved">
-                            <span id="{{ $peer.PublicKey }}-recieved">{{ $peer.Recieved }}</span> <span style="color: blue;">&#8681;</span> 
+                        <div class="received">
+                            <span id="{{ $peer.PublicKey }}-received">{{ $peer.Info.Transfer.Received }}</span> <span style="color: blue;">&#8681;</span> 
                         </div>
                     </div>
                 </summary>
@@ -51,10 +51,10 @@
                         Public Key: <span id="{{ $peer.PublicKey }}-publickey">{{ $peer.PublicKey }}</span>
                     </div>
                     <div class="latesthandshake">
-                        Latest Handshake: <span id="{{ $peer.PublicKey }}-latesthandshake">{{ $peer.LatestHandshake }}</span>
+                        Latest Handshake: <span id="{{ $peer.PublicKey }}-latesthandshake">{{ $peer.Info.LatestHandshake }}</span>
                     </div>
                     <div class="endpoint">
-                        Endpoint: <span id="{{ $peer.PublicKey }}-endpoint">{{ $peer.EndPoint }}</span>
+                        Endpoint: <span id="{{ $peer.PublicKey }}-endpoint">{{ $peer.Info.EndPoint }}</span>
                     </div>
                     <div class="allowedips">
                         Allowed IPs: <span id="{{ $peer.PublicKey }}-allowedips">{{ $peer.AllowedIPs }}</span>
@@ -76,8 +76,8 @@
         setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
     });*/
     document.addEventListener('DOMContentLoaded', function() {
-        getPeerMetaStatus("{{ .interface.Name }}");
-        setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
+        fetchUpdateInterface("{{ .interface.Name }}");
+        setInterval(function(){fetchUpdateInterface("{{ .interface.Name }}");}, 5000);
     });
 </script>
 
