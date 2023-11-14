@@ -37,43 +37,41 @@ function toggleClass(oldClass ,newClass, elementId) {
 }
 
 
-function updatePeerMetaStatus(data){
-    data["Peers"].forEach(peer => {
-        peerMetaStatusId = peer.PublicKey + "-MetaStatus"
-        var peerMetaStatus = document.getElementById(peerMetaStatusId);
-
+function updateInterface(data){
+    data.forEach(peer => {
         var peerId = peer.PublicKey;
         var publickey = document.getElementById(peerId + "-publickey");
         var endpoint = document.getElementById(peerId + "-endpoint");
         var allowedips = document.getElementById(peerId + "-allowedips");
         var latesthandshake = document.getElementById(peerId + "-latesthandshake");
         var sent = document.getElementById(peerId + "-sent");
-        var recieved = document.getElementById(peerId + "-recieved");
+        var received = document.getElementById(peerId + "-received");
 
         var loadingPeer = document.getElementById(peerId + "-index")
-
-        if (peer.MetaStatus) {
+        var peerStatus = document.getElementById(peerId + "-status")
+        console.log(peer)
+        if (peer.Info.Status) {
             loadingPeer.setAttribute("aria-busy", "false");
-            peerMetaStatus.innerHTML = '<span class="statusDot online"></span>';
+            peerStatus.innerHTML = '<span class="statusDot online"></span>';
     
         } else {
             loadingPeer.setAttribute("aria-busy", "false");
-            peerMetaStatus.innerHTML = '<span class="statusDot offline"></span>';
+            peerStatus.innerHTML = '<span class="statusDot offline"></span>';
         }
 
         publickey.innerHTML = peer.PublicKey;     
-        endpoint.innerHTML = peer.EndPoint; 
+        endpoint.innerHTML = peer.Info.EndPoint; 
         allowedips.innerHTML = peer.AllowedIPs; 
-        latesthandshake.innerHTML = peer.LatestHandshake; 
-        sent.innerHTML = peer.Sent; 
-        recieved.innerHTML = peer.Recieved; 
+        latesthandshake.innerHTML = peer.Info.LatestHandshake; 
+        sent.innerHTML = peer.Info.Transfer.Sent; 
+        received.innerHTML = peer.Info.Transfer.Received; 
 
     })
 }
-function getPeerMetaStatus(interfaceName) {
-    fetch("/api/configurations/" + interfaceName)
+function fetchUpdateInterface(interfaceName) {
+    fetch("/api/update/configurations/" + interfaceName)
         .then(response => response.json())
-        .then(data => updatePeerMetaStatus(data))
+        .then(data => updateInterface(data))
         .catch(error => console.error("Error:", error));
 }
 

@@ -86,8 +86,8 @@
 .sent {
   grid-area: sent;
 }
-.recieved {
-  grid-area: recieved;
+.received {
+  grid-area: received;
 }
 
 .endpoint {

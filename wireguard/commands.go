@@ -1,45 +1,73 @@
 package wireguard
 
 import (
+	"log/slog"
 	"os/exec"
 	"strings"
+
+	"github.com/jcocozza/wg-monitor/utils"
 )
 
-// show all interfaces and their peers
-func wg() ([]byte, error ){
-	cmd := exec.Command("wg", "show", "all")
-	output, err := cmd.CombinedOutput()
-
-	return output, err
-}
-
 // run wg show on specific interface
-func wgSpecific(interfaceName string) ([]byte, error) {
+func WgSpecific(interfaceName string) []byte {
 	cmd := exec.Command("wg", "show", interfaceName)
 	output, err := cmd.CombinedOutput()
 
-	return output, err
+	if err != nil {
+		slog.Error("Failed to run wg show "+interfaceName)
+		panic(err)
+	}
+
+	return output
 }
 
-// generate private key 
-func wgGenKey() ([]byte, error){
-	cmd := exec.Command("wg", "genkey")
-	privateKey, err := cmd.Output()
-	return privateKey, err
+// Read in a wireguard config file
+func readConf(configurationPath string) []byte {
+	conf, err := utils.ReadFile(configurationPath)
+
+	if err != nil {
+		slog.Error("Failed to read configuration file for "+configurationPath)
+		panic(err)
+	}
+	return conf
+}
+
+// wireguardPath -- path to folder;
+// Get the .conf files in the wireguardPath
+func getConfNames(wireguardPath string) []byte {
+	cmd1 := exec.Command("ls", wireguardPath)
+	cmd2 := exec.Command("grep", ".conf")
+
+	// Get the output of the first command
+	outCmd1, err := cmd1.Output()
+	if err != nil {
+		slog.Error("Error running ls command:", err)
+		panic(err) 
+	}
+	// Set the input of the second command to the output of the first command
+	cmd2.Stdin = strings.NewReader(string(outCmd1))
+
+	// Get the output of the second command
+	outCmd2, err := cmd2.Output()
+	if err != nil {
+		slog.Error("Error running grep command:", err)
+		panic(err)
+	}
+	return outCmd2
 }
 
 // generate public key from private key
-func wgPubKey(privateKey string) ([]byte, error) {
+func wgPubKey(privateKey string) []byte {
 	pubKeyCmd := exec.Command("wg", "pubkey")
 	pubKeyCmd.Stdin = strings.NewReader(string(privateKey)) // pass 
 	publicKey, err := pubKeyCmd.Output()
-	return publicKey, err
+
+	if err != nil {
+		slog.Error("Failed to generate public key")
+		panic(err)
+	}
+
+	slog.Debug("Generated Public Key:"+string(publicKey))
+	return publicKey
 }
 
-// run ifconfig on a given interface
-func ifconfig(interfaceName string) ([]byte, error){
-	cmd := exec.Command("ifconfig", interfaceName)
-	output, err := cmd.CombinedOutput()
-
-	return output, err
-}

@@ -1,29 +1,29 @@
 package api
 
 import (
-	//"fmt"
+	//"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jcocozza/wg-monitor/wireguard"
 )
 
-func GetWireGuardServerInfo(c *gin.Context) {
-	interfaces := wireguard.GetWgInfo()
-	c.JSON(http.StatusOK, interfaces)
-}
+func UpdateConfiguration(confs *wireguard.WireGuardConfigurations) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		interfaceName := c.Param("interfaceName")
 
+		wireguard.LoadPeerInfo(interfaceName,confs)
 
-func CheckPeerMetaStatus(c *gin.Context) {
-	interfaceName := c.Param("interfaceName")
-	iface := wireguard.GetInterfaceByName(interfaceName)
+		/*
+		jsonData, err := json.Marshal(confs.ConfMap[interfaceName])
 
-	for i, _ := range iface.Peers{
-		iface.Peers[i].CheckMetaStatus()
+		if err != nil {
+			http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
+			return
+		}*/
+		c.JSON(http.StatusOK, confs.ConfMap[interfaceName].Peers) //return the desired interface data from <interfaceName>
 	}
-	
-	c.JSON(http.StatusOK, iface)
-} 
+}
 
 /* API call that also takes in an object
 type Obj struct {}
