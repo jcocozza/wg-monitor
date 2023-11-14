@@ -1,26 +1,11 @@
 package wireguard
 
 import (
-	"os/exec"
+	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 )
-
-//Show all interfaces and their peers
-func wg() ([]byte, error ){
-	cmd := exec.Command("wg", "show", "all")
-	output, err := cmd.CombinedOutput()
-
-	return output, err
-}
-
-// run wg show on specific interface
-func wgSpecific(interfaceName string) ([]byte, error) {
-	cmd := exec.Command("wg", "show", interfaceName)
-	output, err := cmd.CombinedOutput()
-
-	return output, err
-}
 
 //parse output of wg()
 func parseWgOut(wgInput []byte) []Interface {
@@ -137,8 +122,7 @@ func GetInterfaceByName(interfaceName string) Interface {
 
 // the the interface IP -- this will be what is set in the wireguard conf file
 func GetInterfaceIP(interfaceName string) string {
-	cmd := exec.Command("ifconfig", interfaceName)
-	output, err := cmd.CombinedOutput()
+	output, err := ifconfig(interfaceName)
 	if err != nil {
 		panic(err)
 	}
@@ -158,4 +142,45 @@ func GetInterfaceIP(interfaceName string) string {
 	} else {
 		panic("No IP Found -- is your wireguard server down?")
 	}
+}
+
+// generate a private, public key pairing
+func GenerateKeyPair() (string, string){
+	// basic idea: "wg genkey | tee client_privatekey | wg pubkey > client_publickey"
+	privateKey, err := wgGenKey()
+	if err != nil {
+		slog.Error("Error generating private key:", err)
+	}
+
+	publicKey, err := wgPubKey(string(privateKey))
+	if err != nil {
+		slog.Error("Error extracting public key:", err)
+	}
+
+	return string(privateKey), string(publicKey)
+}
+
+// generate a new client for an interface
+// returns the new peer's public key and string representation of the peer file
+func GenerateNewPeer(peerName string, interfaceName string, addresses string, dns string, vpnEndpoint string, allowedIPs string, persistentKeepAlive int) (string, string){
+
+	iface := GetInterfaceByName(interfaceName)
+
+	privateKey, publicKey := GenerateKeyPair()
+
+	// peer "file"
+	peer := fmt.Sprintf(`
+	[Interface]
+	# name = %s
+	Address = %s
+	PrivateKey = %s
+	DNS = %s
+
+	[Peer]
+	PublicKey = %s
+	Endpoint = %s
+	AllowedIPs = %s
+	PersistentKeepalive = %d`, peerName, addresses, privateKey, dns, iface.PublicKey, vpnEndpoint, allowedIPs, persistentKeepAlive)
+
+	return publicKey, peer
 }

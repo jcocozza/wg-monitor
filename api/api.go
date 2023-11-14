@@ -24,3 +24,14 @@ func CheckPeerMetaStatus(c *gin.Context) {
 	
 	c.JSON(http.StatusOK, iface)
 } 
+
+/* API call that also takes in an object
+type Obj struct {}
+
+func exampleAPICALL(obj *Obj) func(c *gin.Context) {
+    return func(c *gin.Context) {
+        // Your handling logic here using the serverInfo object and the Gin context
+        // You can access serverInfo fields and perform necessary operations using the context
+    }
+}
+*/
