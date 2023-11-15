@@ -80,6 +80,7 @@ func main() {
 
     // API ROUTES
     router.GET("/api/update/configurations/:interfaceName", api.UpdateConfiguration(wgConfs))
+    router.POST("/api/configurations/:interfaceName/newPeer", api.NewPeer)
     
     // Run the server
     router.Run("10.5.5.1:8080")

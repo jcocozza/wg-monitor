@@ -36,7 +36,6 @@ function toggleClass(oldClass ,newClass, elementId) {
     }
 }
 
-
 function updateInterface(data){
     data.forEach(peer => {
         var peerId = peer.PublicKey;
@@ -73,5 +72,13 @@ function fetchUpdateInterface(interfaceName) {
         .then(response => response.json())
         .then(data => updateInterface(data))
         .catch(error => console.error("Error:", error));
+}
+
+document.getElementById('showFormBtn').addEventListener('click', function() {
+    document.getElementById('newPeerForm').style.display = 'block';
+});
+
+function closeForm() {
+    document.getElementById('newPeerForm').style.display = 'none';
 }
 

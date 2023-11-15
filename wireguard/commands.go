@@ -56,6 +56,19 @@ func getConfNames(wireguardPath string) []byte {
 	return outCmd2
 }
 
+// generate private key 
+func wgGenKey() []byte {
+	cmd := exec.Command("wg", "genkey")
+	privateKey, err := cmd.Output()
+
+	if err != nil {
+		slog.Error("Failed to generate private key")
+	}
+
+	slog.Debug("Generated Public Key:"+string(privateKey))
+	return privateKey
+}
+
 // generate public key from private key
 func wgPubKey(privateKey string) []byte {
 	pubKeyCmd := exec.Command("wg", "pubkey")

@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+
+	"github.com/jcocozza/wg-monitor/utils"
 )
 
 // Check all the .conf files in the wireguard path.
@@ -36,7 +38,7 @@ func parseConf(configurationPath string, configurationFileName string) *Configur
 
 	confElements := strings.Split(confstr, "[Peer]") //split on "[Peer]"
 
-	name, ifaceAddress, ifaceListenPort, ifacePrivateKey, ifaceDNS := parseInterfaceInfo(confElements[0]) // the first thing in the file is the interface
+	name, ifaceAddress, ifaceListenPort, ifacePrivateKey, ifaceDNS, ifacePostUp, ifacePostDown := parseInterfaceInfo(confElements[0]) // the first thing in the file is the interface
 
 	var peerList []*Peer
 	for i := 1; i < len(confElements); i++ { // parse rest of config file -- the rest are peers
@@ -45,18 +47,21 @@ func parseConf(configurationPath string, configurationFileName string) *Configur
 	}
 
 	interfaceName := strings.TrimSuffix(configurationFileName, ".conf") // remove .conf to get pure interface name
-	conf := NewConfiguration(interfaceName, name, ifaceAddress, ifaceListenPort, ifacePrivateKey, ifaceDNS, peerList)
+	conf := NewConfiguration(interfaceName, name, ifaceAddress, ifaceListenPort, ifacePrivateKey, ifaceDNS, ifacePostUp, ifacePostDown, peerList)
 
 	return conf
 }
 
-// Return name, address, listenPort, privateKey, dns in that order
-func parseInterfaceInfo(iface string) (string,string,int,string,string) {
+// Return name, address, listenPort, privateKey, dns, PostUp, PostDown in that order
+// responsible for Parsing an [Interface] in a wirguard .conf file
+func parseInterfaceInfo(iface string) (string,string,int,string,string,string,string) {
 	var name string
 	var address string
 	var listenPort int
 	var privateKey string
 	var dns string
+	var postUp string
+	var postDown string
 	var err error
 	
 	lines := strings.Split(iface, "\n")
@@ -93,11 +98,22 @@ func parseInterfaceInfo(iface string) (string,string,int,string,string) {
 			dns = strings.TrimPrefix(line, dnsPrefix)
 		}
 
+		postUpPrefix := "PostUp = "
+		if strings.HasPrefix(line, postUpPrefix) {
+			postUp = strings.TrimPrefix(line, postUpPrefix)
+		}
+
+		postDownPrefix := "PostDown = "
+		if strings.HasPrefix(line, postDownPrefix) {
+			postDown = strings.TrimPrefix(line, postDownPrefix)
+		}
+
 	}
-	return name, address, listenPort, privateKey, dns
+	return name, address, listenPort, privateKey, dns, postUp, postDown
 }
 
-// Return name, publicKey, allowedIPs in that order
+// Return a Peer
+// responsible for Parsing a [Peer] in a wirguard .conf file
 func parsePeer(peer string) *Peer {
 	var name string
 	var publicKey string
@@ -130,11 +146,13 @@ func parsePeer(peer string) *Peer {
 		}
 	}
 
-	newPeer := NewPeer(name,publicKey,allowedIPs)
+	newPeer := NewPeer(name,publicKey,"",allowedIPs)
 
 	return newPeer
 }
 
+// responsible for parsing the content wg show <inferfaceName> 
+// more specifically handles individual [Peer] elements
 func ParsePeerInfo(peerInfo string) *PeerInfo {
 	var endPoint string
 	var latestHandshake string
@@ -189,4 +207,24 @@ func LoadPeerInfo(interfaceName string, confs *WireGuardConfigurations) {
 		confs.ConfMap[interfaceName].PeerMap[peerInfo.PublicKey].Info = peerInfo
 		confs.ConfMap[interfaceName].PeerMap[peerInfo.PublicKey].setStatus()
 	}
+}
+
+// generate a private, public key pairing
+// the basic idea is: "wg genkey | tee client_privatekey | wg pubkey > client_publickey"
+func GenerateKeyPair() (string, string){
+	privateKey := wgGenKey()
+	publicKey := wgPubKey(string(privateKey))
+
+	return string(privateKey), string(publicKey)
+}
+
+// generate a new client for an interface
+// returns the string representation of the peer file -- this file goes to the client machine
+func GenerateNewPeer(configurationPath string, peerName string, allowedIPs []string, dns string, vpnEndpoint string, confName string, confs *WireGuardConfigurations, addressesToUse []string,persistentKeepAlive int) []byte {
+	privateKey, publicKey := GenerateKeyPair()
+	peer := NewPeer(peerName, publicKey, privateKey, allowedIPs)
+	out := peer.confFileOut(dns, vpnEndpoint, confs.ConfMap[confName], addressesToUse, persistentKeepAlive)
+	utils.GenerateQRCode(out, peer.PublicKey)
+	utils.AppendTo(configurationPath, out) // add the new peer to the server .conf file
+	return out
 }

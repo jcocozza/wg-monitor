@@ -3,7 +3,7 @@
     <title>{{ .interfaceName }} - WireGuard Monitor </title>
 </head>
 <body>
-    <h2> {{ .interface.Name }}</h2>
+    <h2> {{ .interface.Name }} </h2>
     <table>
         <thead>
             <tr>
@@ -66,6 +66,36 @@
     </div>
     <input type="checkbox" role="switch" id="toggle-switch" onclick="toggleClass('grid-container', 'new-class', 'peers')">
     <label for="toggle-switch"> Row-Grid </label>
+
+    <button id="showFormBtn" class="btn btn-primary" role="button">Show Form</button>
+    <div id="newPeerForm" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closeForm()">&times;</span>
+            <form action="/api/configurations/{{ .interface.Name }}/newPeer" method="post">
+                <!-- Your form fields go here -->
+                <label for="name">name:</label>
+                <input type="text" id="name" name="name">
+                
+                <label for="allowedIPs">allowedIPs:</label>
+                <input type="text" id="allowedIPs" name="allowedIPs">
+                
+                <label for="dns">DNS:</label>
+                <input type="text" id="dns" name="dns" value="1.1.1.1">
+
+                <label for="vpnEndpoint">Endpoint:</label>
+                <input type="text" id="vpnEndpoint" name="vpnEndpoint" value="my-vpn-server.net">
+
+                <label for="addressesToUse">Addresses to Use:</label>
+                <input type="text" id="addressesToUse" name="addressesToUse" value="0.0.0.0/0,::/0">
+                
+                <label for="persistentKeepAlive">Persistent Keep Alive:</label>
+                <input type="int" id="persistentKeepAlive" name="persistentKeepAlive" value=25>
+
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+    </div>
+
 </body>
 
 <script>

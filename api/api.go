@@ -2,6 +2,7 @@ package api
 
 import (
 	//"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,6 +24,26 @@ func UpdateConfiguration(confs *wireguard.WireGuardConfigurations) func(c *gin.C
 		}*/
 		c.JSON(http.StatusOK, confs.ConfMap[interfaceName].Peers) //return the desired interface data from <interfaceName>
 	}
+}
+
+func NewPeer(c *gin.Context) {
+	interfaceName := c.Param("interfaceName")
+	
+	name := c.PostForm("name")
+    allowedIPs := c.PostForm("allowedIPs")
+	dns := c.PostForm("dns")
+    vpnEndpoint := c.PostForm("vpnEndpoint")
+	addressesToUse := c.PostForm("addressesToUse")
+	persistentKeepAlive := c.PostForm("persistentKeepAlive")
+
+	fmt.Println("Success:")
+	fmt.Println("name:",interfaceName)
+	fmt.Println("name:",name)
+	fmt.Println("name:",allowedIPs)
+	fmt.Println("name:",dns)
+	fmt.Println("name:",vpnEndpoint)
+	fmt.Println("name:",addressesToUse)
+	fmt.Println("name:",persistentKeepAlive)
 }
 
 /* API call that also takes in an object
