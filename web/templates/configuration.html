@@ -71,27 +71,27 @@
     <div id="newPeerForm" class="popup">
         <div class="popup-content">
             <span class="close" onclick="closeForm()">&times;</span>
-            <form action="/api/configurations/{{ .interface.Name }}/newPeer" method="post">
+            <form id="formForNewPeer" action="/api/configurations/{{ .interface.Name }}/newPeer" method="post">
                 <!-- Your form fields go here -->
                 <label for="name">name:</label>
                 <input type="text" id="name" name="name">
                 
                 <label for="allowedIPs">allowedIPs:</label>
-                <input type="text" id="allowedIPs" name="allowedIPs">
+                <input type="text" id="allowedIPs" name="allowedIPs" required>
                 
                 <label for="dns">DNS:</label>
                 <input type="text" id="dns" name="dns" value="1.1.1.1">
 
                 <label for="vpnEndpoint">Endpoint:</label>
-                <input type="text" id="vpnEndpoint" name="vpnEndpoint" value="my-vpn-server.net">
+                <input type="text" id="vpnEndpoint" name="vpnEndpoint" value="my-vpn-server.net" required>
 
                 <label for="addressesToUse">Addresses to Use:</label>
-                <input type="text" id="addressesToUse" name="addressesToUse" value="0.0.0.0/0,::/0">
+                <input type="text" id="addressesToUse" name="addressesToUse" value="0.0.0.0/0,::/0" required>
                 
                 <label for="persistentKeepAlive">Persistent Keep Alive:</label>
-                <input type="int" id="persistentKeepAlive" name="persistentKeepAlive" value=25>
+                <input type="int" id="persistentKeepAlive" name="persistentKeepAlive" value=25 pattern="[0-9]+">
 
-                <input type="submit" value="Submit">
+                <input type="submit" value="Submit" onclick="return confirmSubmission()">
             </form>
         </div>
     </div>

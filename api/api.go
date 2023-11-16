@@ -4,6 +4,8 @@ import (
 	//"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jcocozza/wg-monitor/wireguard"
@@ -26,24 +28,39 @@ func UpdateConfiguration(confs *wireguard.WireGuardConfigurations) func(c *gin.C
 	}
 }
 
-func NewPeer(c *gin.Context) {
-	interfaceName := c.Param("interfaceName")
-	
-	name := c.PostForm("name")
-    allowedIPs := c.PostForm("allowedIPs")
-	dns := c.PostForm("dns")
-    vpnEndpoint := c.PostForm("vpnEndpoint")
-	addressesToUse := c.PostForm("addressesToUse")
-	persistentKeepAlive := c.PostForm("persistentKeepAlive")
+func AddPeer(wireguardPath string, confs *wireguard.WireGuardConfigurations) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		interfaceName := c.Param("interfaceName")
 
-	fmt.Println("Success:")
-	fmt.Println("name:",interfaceName)
-	fmt.Println("name:",name)
-	fmt.Println("name:",allowedIPs)
-	fmt.Println("name:",dns)
-	fmt.Println("name:",vpnEndpoint)
-	fmt.Println("name:",addressesToUse)
-	fmt.Println("name:",persistentKeepAlive)
+		confFilePath := wireguardPath+interfaceName+".conf"
+	
+		name := c.PostForm("name")
+		
+		allowedIPsString := c.PostForm("allowedIPs")
+		allowedIPs := strings.Split(allowedIPsString, ",")
+		
+		dns := c.PostForm("dns")
+		
+		vpnEndpoint := c.PostForm("vpnEndpoint")
+
+		addressesToUseString := c.PostForm("addressesToUse")
+		addressesToUse := strings.Split(addressesToUseString, ",")
+
+		persistentKeepAliveString := c.PostForm("persistentKeepAlive")
+		persistentKeepAlive, _ := strconv.Atoi(persistentKeepAliveString) // html form ensures that we get an integer
+		
+		
+		fmt.Println("Success:")
+		fmt.Println("name:",interfaceName)
+		fmt.Println("name:",name)
+		fmt.Println("name:",allowedIPs)
+		fmt.Println("name:",dns)
+		fmt.Println("name:",vpnEndpoint)
+		fmt.Println("name:",addressesToUse)
+		fmt.Println("name:",persistentKeepAlive)
+
+		wireguard.GenerateNewPeer(confFilePath, name, allowedIPs, dns, vpnEndpoint, interfaceName, confs, addressesToUse, persistentKeepAlive)
+	}
 }
 
 /* API call that also takes in an object

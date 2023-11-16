@@ -18,8 +18,7 @@ type NavLink struct {
     URL  string
 }
 
-func initWGMonitor() *wireguard.WireGuardConfigurations {
-    wireguardPath := "/usr/local/etc/wireguard/" //os.Args[1]
+func initWGMonitor(wireguardPath string) *wireguard.WireGuardConfigurations {
     wgConfs := wireguard.InitWireGuardConfigurations(wireguardPath)
 
     return wgConfs
@@ -38,8 +37,9 @@ func SetNavLinks(confNames []string) gin.HandlerFunc {
 }
 
 func main() {
+    wireguardPath := "/usr/local/etc/wireguard/" //os.Args[1]
 
-    wgConfs := initWGMonitor()
+    wgConfs := initWGMonitor(wireguardPath)
 
     // Initialize the Gin router
     router := gin.Default()
@@ -80,7 +80,7 @@ func main() {
 
     // API ROUTES
     router.GET("/api/update/configurations/:interfaceName", api.UpdateConfiguration(wgConfs))
-    router.POST("/api/configurations/:interfaceName/newPeer", api.NewPeer)
+    router.POST("/api/configurations/:interfaceName/newPeer", api.AddPeer(wireguardPath, wgConfs))
     
     // Run the server
     router.Run("10.5.5.1:8080")

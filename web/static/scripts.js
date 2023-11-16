@@ -82,3 +82,22 @@ function closeForm() {
     document.getElementById('newPeerForm').style.display = 'none';
 }
 
+function confirmSubmission() {
+    // Manually trigger form validation
+    var form = document.getElementById("formForNewPeer");
+    if (!form.checkValidity()) {
+        // If the form is not valid, do not submit
+        form.reportValidity();
+        return false;
+    }
+
+    // Confirm submission with a dialog
+    var confirmed = confirm("Are you sure you want to create a new peer? It will modify this interface's .conf file and reload the server in the background");
+    if (!confirmed) {
+        // If not confirmed, prevent the form submission
+        return false;
+    }
+    // If confirmed, allow the form submission
+    form.submit();
+    return true;
+}

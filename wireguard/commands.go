@@ -1,6 +1,7 @@
 package wireguard
 
 import (
+	"fmt"
 	"log/slog"
 	"os/exec"
 	"strings"
@@ -84,3 +85,14 @@ func wgPubKey(privateKey string) []byte {
 	return publicKey
 }
 
+// reload the server without a reboot (useful when adding new peers)
+func ReloadServer(interfaceName string) {
+	cmdString := fmt.Sprintf("sudo wg syncconf %s <(sudo wg-quick strip %s)", interfaceName, interfaceName) 
+	cmd := exec.Command(cmdString)
+
+	err := cmd.Run()
+
+	if err != nil {
+		slog.Error("Failed to reload server: "+interfaceName)
+	}
+}

@@ -220,11 +220,20 @@ func GenerateKeyPair() (string, string){
 
 // generate a new client for an interface
 // returns the string representation of the peer file -- this file goes to the client machine
-func GenerateNewPeer(configurationPath string, peerName string, allowedIPs []string, dns string, vpnEndpoint string, confName string, confs *WireGuardConfigurations, addressesToUse []string,persistentKeepAlive int) []byte {
+func GenerateNewPeer(configurationPath string, peerName string, allowedIPs []string, dns string, vpnEndpoint string, confName string, confs *WireGuardConfigurations, addressesToUse []string, persistentKeepAlive int) []byte {
 	privateKey, publicKey := GenerateKeyPair()
 	peer := NewPeer(peerName, publicKey, privateKey, allowedIPs)
 	out := peer.confFileOut(dns, vpnEndpoint, confs.ConfMap[confName], addressesToUse, persistentKeepAlive)
-	utils.GenerateQRCode(out, peer.PublicKey)
-	utils.AppendTo(configurationPath, out) // add the new peer to the server .conf file
+
+
+	sanatizedKey := utils.SanatizeKey(peer.PublicKey)
+	peerFolderPath := "web/createdPeers/"+sanatizedKey
+	utils.MkDir(peerFolderPath)
+	utils.GenerateQRCode(peerFolderPath+"/qrcode.png", out)
+	utils.WriteFile(peerFolderPath+"/peer.conf",out)
+
+	
+	//"web/qrcodes/qrcode"+name+".png"
+	//utils.AppendTo(configurationPath, out) // add the new peer to the server .conf file
 	return out
 }

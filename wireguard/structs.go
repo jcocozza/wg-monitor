@@ -155,18 +155,24 @@ func (p *Peer) ServerConfFileOut() []byte {
 func (p *Peer) confFileOut(dns string, vpnEndPoint string, conf *Configuration, addressesToUse []string, persistenKeepAlive int) []byte {
 	allowedIPsString := strings.Join(p.AllowedIPs,",")
 	addressesToUseString := strings.Join(addressesToUse,",")
-	out := fmt.Sprintf(`[Interface]
-	# Name = %s
-	Address = %s
-	PrivateKey = %s
-	DNS = %s
+	
+	out := "[Interface]\n"
+	if p.Name != "" {
+		out += fmt.Sprintf("# Name = %s\n", p.Name)
+	}
+	out += fmt.Sprintf("Address = %s\n", allowedIPsString)
+	out += fmt.Sprintf("PrivateKey = %s\n", p.PrivateKey)
+	if dns != "" {
+		out += fmt.Sprintf("DNS = %s\n", dns)
+	}
+	out += "[Peer]\n"
+	out += fmt.Sprintf("# Name = %s\n",conf.Name)
+	out += fmt.Sprintf("Endpoint = %s\n", vpnEndPoint)
+	out += fmt.Sprintf("PublicKey = %s\n", conf.PublicKey)
+	out += fmt.Sprintf("AllowedIPs = %s\n",addressesToUseString)
 
-	[Peer]
-	# Name = %s
-	Endpoint = %s
-	PublicKey = %s
-	AllowedIPs = %s
-	PersistentKeepalive = %d`, p.Name, allowedIPsString, p.PrivateKey, dns, conf.Name, vpnEndPoint, conf.PublicKey, addressesToUseString, persistenKeepAlive)
-
+	if persistenKeepAlive == -999 {
+		out += fmt.Sprintf("PersistentKeepalive = %d", persistenKeepAlive)
+	}
 	return []byte(out)
 }
