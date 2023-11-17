@@ -18,8 +18,8 @@ func NewWireGuardConfigurations(confList []*Configuration) *WireGuardConfigurati
 	var confNames []string
 	confMap := make(map[string]*Configuration)
 	for _, conf := range confList {
-		confNames = append(confNames, conf.InterfaceName)
-		confMap[conf.InterfaceName] = conf
+		confNames = append(confNames, conf.ConfName)
+		confMap[conf.ConfName] = conf
 		////ConfMapPublicKey[conf.PublicKey] = conf
 
 	}
@@ -31,7 +31,7 @@ func NewWireGuardConfigurations(confList []*Configuration) *WireGuardConfigurati
 }
 
 type Configuration struct {
-	InterfaceName string			`json:"interfaceName"`
+	ConfName string					`json:"confName"` // going to need to go through all of code to convert this to configurationName -- it is NOT the same as the interface name
 	Name          string        	`json:"name"`
 	Address       string        	`json:"address"`
 	ListenPort    int           	`json:"listenPort"`
@@ -42,10 +42,11 @@ type Configuration struct {
 	PostDown	  string			`json:"postDown"`
 	Peers         []*Peer 	    	`json:"peers"`
 	PeerMap       map[string]*Peer	`json:"peerMap"`
+	Info 		  ConfigurationInfo `json:"info"`
 }
-func NewConfiguration(interfaceName string, name string, address string, listenPort int, privateKey string, dns string, postUp string, postDown string, peers []*Peer) *Configuration {
+func NewConfiguration(confName string, name string, address string, listenPort int, privateKey string, dns string, postUp string, postDown string, peers []*Peer) *Configuration {
 	if name == "" {
-		name = interfaceName
+		name = confName
 	}
 	publicKey := string(wgPubKey(privateKey))
 
@@ -55,7 +56,7 @@ func NewConfiguration(interfaceName string, name string, address string, listenP
 	}
 
 	return &Configuration{
-		InterfaceName: interfaceName,
+		ConfName: confName,
 		Name: name,
 		Address: address,
 		ListenPort: listenPort,	
@@ -66,6 +67,18 @@ func NewConfiguration(interfaceName string, name string, address string, listenP
 		PostDown: postDown,
 		Peers: peers,
 		PeerMap: peerMap,
+	}
+}
+
+type ConfigurationInfo struct {
+	InterfaceName string `json:"interfaceName"` //this is the actual interface that wireguard is running the server on. Can be different than the <confName>.conf's <confName>
+	Status 	      bool	 `json:"Status"`
+}
+
+func NewConfigurationInfo(interfaceName string) *ConfigurationInfo {
+	return &ConfigurationInfo{
+		InterfaceName: interfaceName,
+		Status: false,
 	}
 }
 

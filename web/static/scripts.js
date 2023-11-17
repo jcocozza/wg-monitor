@@ -66,8 +66,8 @@ function updateInterface(data){
 
     })
 }
-function fetchUpdateInterface(interfaceName) {
-    fetch("/api/update/configurations/" + interfaceName)
+function fetchUpdateInterface(confName) {
+    fetch("/api/update/configurations/" + confName)
         .then(response => response.json())
         .then(data => updateInterface(data))
         .catch(error => console.error("Error:", error));

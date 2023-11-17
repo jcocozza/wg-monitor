@@ -44,8 +44,8 @@ func parseConf(configurationPath string, configurationFileName string) *Configur
 		peerList = append(peerList, peer)
 	}
 
-	interfaceName := strings.TrimSuffix(configurationFileName, ".conf") // remove .conf to get pure interface name
-	conf := NewConfiguration(interfaceName, name, ifaceAddress, ifaceListenPort, ifacePrivateKey, ifaceDNS, ifacePostUp, ifacePostDown, peerList)
+	confName := strings.TrimSuffix(configurationFileName, ".conf") // remove .conf to get pure interface name
+	conf := NewConfiguration(confName, name, ifaceAddress, ifaceListenPort, ifacePrivateKey, ifaceDNS, ifacePostUp, ifacePostDown, peerList)
 
 	return conf
 }
@@ -192,9 +192,9 @@ func ParsePeerInfo(peerInfo string) *PeerInfo {
 	return newPeerInfo
 }
 
-// call wg show <interfaceName> --> update peerInfoData
-func LoadPeerInfo(interfaceName string, confs *WireGuardConfigurations) {
-	wgInfo := string(WgSpecific(interfaceName))
+// call wg show <confName> --> update peerInfoData
+func LoadPeerInfo(confName string, confs *WireGuardConfigurations) {
+	wgInfo := string(WgSpecific(confName))
 	wgInfoElements := strings.Split(wgInfo, "peer:") //split on "peer:"
 
 
@@ -202,8 +202,8 @@ func LoadPeerInfo(interfaceName string, confs *WireGuardConfigurations) {
 		peerInfo := ParsePeerInfo(wgInfoElements[i])
 
 
-		confs.ConfMap[interfaceName].PeerMap[peerInfo.PublicKey].Info = peerInfo
-		confs.ConfMap[interfaceName].PeerMap[peerInfo.PublicKey].setStatus()
+		confs.ConfMap[confName].PeerMap[peerInfo.PublicKey].Info = peerInfo
+		confs.ConfMap[confName].PeerMap[peerInfo.PublicKey].setStatus()
 	}
 }
 

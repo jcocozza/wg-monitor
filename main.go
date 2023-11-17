@@ -29,8 +29,8 @@ func SetNavLinks(confNames []string) gin.HandlerFunc {
     return func (c *gin.Context) {
         var navLinks []NavLink
 
-        for _, interfaceName := range confNames {
-            navLinks = append(navLinks, NavLink{interfaceName, fmt.Sprintf("/configurations/%s", interfaceName)})
+        for _, confName := range confNames {
+            navLinks = append(navLinks, NavLink{confName, fmt.Sprintf("/configurations/%s", confName)})
         }
         c.Set("navLinks", navLinks)
     }
@@ -62,30 +62,30 @@ func main() {
         })
     })
 
-    router.GET("/configurations/:interfaceName", func (c *gin.Context)  {
-        interfaceName := c.Param("interfaceName")
-        iface := wgConfs.ConfMap[interfaceName]
-        //iface := wireguardOld.ExtractInterface(interfaces, interfaceName)
+    router.GET("/configurations/:confName", func (c *gin.Context)  {
+        confName := c.Param("confName")
+        iface := wgConfs.ConfMap[confName]
+        //iface := wireguardOld.ExtractInterface(interfaces, confName)
 
         //for _,peer := range iface.Peers{
         //    peer.CheckMetaStatus()
         //}
 
         c.HTML(http.StatusOK, "configuration.html", gin.H{
-            "interfaceName" : interfaceName,
+            "confName" : confName,
             "interface" : iface,
             "navLinks" : c.MustGet("navLinks").([]NavLink),
         })
     })
 
 
-    router.GET("/configurations/:interfaceName/newPeer", func(c *gin.Context) {
+    router.GET("/configurations/:confName/newPeer", func(c *gin.Context) {
         c.HTML(http.StatusOK, "newPeerPopup.html", gin.H{})
     })
 
     // API ROUTES
-    router.GET("/api/update/configurations/:interfaceName", api.UpdateConfiguration(wgConfs))
-    router.POST("/api/configurations/:interfaceName/newPeer", api.AddPeer(wireguardPath, wgConfs))
+    router.GET("/api/update/configurations/:confName", api.UpdateConfiguration(wgConfs))
+    router.POST("/api/configurations/:confName/newPeer", api.AddPeer(wireguardPath, wgConfs))
     
     // Run the server
     //router.Run("143.229.244.67:8080")

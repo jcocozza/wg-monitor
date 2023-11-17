@@ -10,12 +10,12 @@ import (
 )
 
 // run wg show on specific interface
-func WgSpecific(interfaceName string) []byte {
-	cmd := exec.Command("wg", "show", interfaceName)
+func WgSpecific(confName string) []byte {
+	cmd := exec.Command("wg", "show", confName)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
-		slog.Error("Failed to run wg show "+interfaceName)
+		slog.Error("Failed to run wg show "+confName)
 		panic(err)
 	}
 
@@ -86,13 +86,13 @@ func wgPubKey(privateKey string) []byte {
 }
 
 // reload the server without a reboot (useful when adding new peers)
-func ReloadServer(interfaceName string) {
-	cmdString := fmt.Sprintf("sudo wg syncconf %s <(sudo wg-quick strip %s)", interfaceName, interfaceName) 
+func ReloadServer(confName string) {
+	cmdString := fmt.Sprintf("sudo wg syncconf %s <(sudo wg-quick strip %s)", confName, confName) 
 	cmd := exec.Command(cmdString)
 
 	err := cmd.Run()
 
 	if err != nil {
-		slog.Error("Failed to reload server: "+interfaceName)
+		slog.Error("Failed to reload server: "+confName)
 	}
 }

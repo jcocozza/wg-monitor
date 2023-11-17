@@ -1,6 +1,6 @@
 {{ template "header.html" .}}
 <head>
-    <title>{{ .interfaceName }} - WireGuard Monitor </title>
+    <title>{{ .confName }} - WireGuard Monitor </title>
 </head>
 <body>
     <h2> {{ .interface.Name }} </h2>
@@ -101,12 +101,6 @@
 </body>
 
 <script>
-    /*
-    document.addEventListener('DOMContentLoaded', function() {
-        var interfaceName = document.getElementById("peerStatusButton").getAttribute("data-interface-name")
-        //getPeerMetaStatus(interfaceName)
-        setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
-    });*/
     document.addEventListener('DOMContentLoaded', function() {
         fetchUpdateInterface("{{ .interface.Name }}");
         setInterval(function(){fetchUpdateInterface("{{ .interface.Name }}");}, 5000);

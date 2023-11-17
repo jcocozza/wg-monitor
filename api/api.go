@@ -16,18 +16,18 @@ import (
 
 func UpdateConfiguration(confs *wireguard.WireGuardConfigurations) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		interfaceName := c.Param("interfaceName")
+		confName := c.Param("confName")
 
-		wireguard.LoadPeerInfo(interfaceName,confs)
+		wireguard.LoadPeerInfo(confName,confs)
 
 		/*
-		jsonData, err := json.Marshal(confs.ConfMap[interfaceName])
+		jsonData, err := json.Marshal(confs.ConfMap[confName])
 
 		if err != nil {
 			http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
 			return
 		}*/
-		c.JSON(http.StatusOK, confs.ConfMap[interfaceName].Peers) //return the desired interface data from <interfaceName>
+		c.JSON(http.StatusOK, confs.ConfMap[confName].Peers) //return the desired interface data from <confName>
 	}
 }
 
@@ -39,8 +39,8 @@ type NewPeerData struct {
 
 func AddPeer(wireguardPath string, confs *wireguard.WireGuardConfigurations) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		interfaceName := c.Param("interfaceName")
-		confFilePath := wireguardPath+interfaceName+".conf"
+		confName := c.Param("confName")
+		confFilePath := wireguardPath+confName+".conf"
 	
 		name := c.PostForm("name")
 		
@@ -74,7 +74,7 @@ func AddPeer(wireguardPath string, confs *wireguard.WireGuardConfigurations) fun
 		*/
 		/*
 		fmt.Println("Success:")
-		fmt.Println("name:",interfaceName)
+		fmt.Println("name:",confName)
 		fmt.Println("name:",name)
 		fmt.Println("name:",allowedIPs)
 		fmt.Println("name:",dns)
@@ -82,7 +82,7 @@ func AddPeer(wireguardPath string, confs *wireguard.WireGuardConfigurations) fun
 		fmt.Println("name:",addressesToUse)
 		fmt.Println("name:",persistentKeepAlive)
 		*/
-		peerFile := wireguard.GenerateNewPeer(confFilePath, name, allowedIPs, dns, vpnEndpoint, interfaceName, confs, addressesToUse, persistentKeepAlive)
+		peerFile := wireguard.GenerateNewPeer(confFilePath, name, allowedIPs, dns, vpnEndpoint, confName, confs, addressesToUse, persistentKeepAlive)
 		qrPeerData := utils.QRCodeData(peerFile, 300)
 		str := base64.StdEncoding.EncodeToString(qrPeerData)
 		data := NewPeerData{
