@@ -3,35 +3,37 @@
     <title>{{ .confName }} - WireGuard Monitor </title>
 </head>
 <body>
-    <h2> {{ .interface.Name }} </h2>
+    <h2> {{ .configuration.NickName }} </h2>
     <table>
         <thead>
             <tr>
                 <th>Public Key</th>
                 <th>IPAddress</th>
                 <th>Listen Port</th>
+                <th>Interface</th>
                 <th>Data Info</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>{{ .interface.PublicKey }}</td>
-                <td>{{ .interface.Address }}</td>
-                <td>{{ .interface.ListenPort }}</td>
+                <td>{{ .configuration.PublicKey }}</td>
+                <td>{{ .configuration.Address }}</td>
+                <td>{{ .configuration.ListenPort }}</td>
+                <td>{{ .configuration.NetworkInfo.Name }}</td>
                 <td> ***** </td>
             </tr>
         </tbody>
     </table>
 
-    <h4>Total Clients: {{ len .interface.Peers }}</h4>
+    <h4>Total Clients: {{ len .configuration.Peers }}</h4>
 
     <div id="peers", class="grid-container">
-        {{ range $index, $peer := .interface.Peers }}
+        {{ range $index, $peer := .configuration.Peers }}
         <div class="peer">
             <details>
                 <summary>
                     <span id="{{ $peer.PublicKey }}-index" aria-busy="true">
-                        Peer: {{ $peer.Name }}
+                        Peer: {{ $peer.NickName }}
                     </span>
                     <span id="{{ $peer.PublicKey }}-status" class="peerStatus">
                         <span class="statusDot offline"></span>
@@ -102,8 +104,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        fetchUpdateInterface("{{ .interface.Name }}");
-        setInterval(function(){fetchUpdateInterface("{{ .interface.Name }}");}, 5000);
+        fetchUpdateInterface("{{ .configuration.ConfName }}");
+        setInterval(function(){fetchUpdateInterface("{{ .configuration.ConfName }}");}, 5000);
     });
 
     // show new peer form
@@ -130,7 +132,7 @@
         var formData = new FormData(document.getElementById("formForNewPeer"));
         // If confirmed, allow the form submission
         closeElement("newPeerForm")
-        fetch("/api/configurations/{{ .interface.Name }}/newPeer", {
+        fetch("/api/configurations/{{ .configuration.ConfName }}/newPeer", {
             method: "POST",
             body: formData,
         })
@@ -142,7 +144,7 @@
             };
 
             // Send the data to the popup window
-            var popupWindow = window.open("/configurations/{{ .interface.Name }}/newPeer", "ResizablePopup", "resizable=yes,scrollbars=yes,width=850,height=350");            
+            var popupWindow = window.open("/configurations/{{ .configuration.ConfName }}/newPeer", "ResizablePopup", "resizable=yes,scrollbars=yes,width=850,height=350");            
             setTimeout(function () {
                 // Send the data to the popup window
                 popupWindow.postMessage({ popupData: senddata }, '*');

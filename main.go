@@ -11,26 +11,28 @@ import (
 
 	"github.com/jcocozza/wg-monitor/api"
 	"github.com/jcocozza/wg-monitor/wireguard"
+	"github.com/jcocozza/wg-monitor/wireguard/structs"
 )
 
 type NavLink struct {
     Text string
     URL  string
+    Status *structs.NetworkInterface
 }
 
-func initWGMonitor(wireguardPath string) *wireguard.WireGuardConfigurations {
-    wgConfs := wireguard.InitWireGuardConfigurations(wireguardPath)
 
+func initWGMonitor(wireguardPath string) api.WgConfig {
+    wgConfs := wireguard.LoadWireGuard(wireguardPath)
     return wgConfs
 }
 
 // middleware for navlinks based on the configurations that are set up 
-func SetNavLinks(confNames []string) gin.HandlerFunc {
+func SetNavLinks(configurations api.WgConfig) gin.HandlerFunc {
     return func (c *gin.Context) {
         var navLinks []NavLink
 
-        for _, confName := range confNames {
-            navLinks = append(navLinks, NavLink{confName, fmt.Sprintf("/configurations/%s", confName)})
+        for confName, conf := range configurations {
+            navLinks = append(navLinks, NavLink{confName, fmt.Sprintf("/configurations/%s", confName), conf.NetworkInfo})
         }
         c.Set("navLinks", navLinks)
     }
@@ -43,7 +45,7 @@ func main() {
 
     // Initialize the Gin router
     router := gin.Default()
-    router.Use(SetNavLinks(wgConfs.ConfNames))
+    router.Use(SetNavLinks(wgConfs))
     
     router.LoadHTMLGlob("web/templates/*")
     router.Static("/static", "web/static")
@@ -64,16 +66,17 @@ func main() {
 
     router.GET("/configurations/:confName", func (c *gin.Context)  {
         confName := c.Param("confName")
-        iface := wgConfs.ConfMap[confName]
+        configuration := wgConfs[confName]
+        
+        //iface := wgConfs [confName]
         //iface := wireguardOld.ExtractInterface(interfaces, confName)
 
         //for _,peer := range iface.Peers{
         //    peer.CheckMetaStatus()
         //}
-
         c.HTML(http.StatusOK, "configuration.html", gin.H{
             "confName" : confName,
-            "interface" : iface,
+            "configuration" : configuration,
             "navLinks" : c.MustGet("navLinks").([]NavLink),
         })
     })
@@ -84,7 +87,8 @@ func main() {
     })
 
     // API ROUTES
-    router.GET("/api/update/configurations/:confName", api.UpdateConfiguration(wgConfs))
+    router.GET("/api/update/configurations/:interfaceName", api.UpdateConfiguration(wgConfs))
+    router.GET("/api/update/configurations/all", api.UpdateConfigurations(wgConfs))
     router.POST("/api/configurations/:confName/newPeer", api.AddPeer(wireguardPath, wgConfs))
     
     // Run the server

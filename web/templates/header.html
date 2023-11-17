@@ -15,7 +15,19 @@
 
         <weak>Configurations</weak>
         {{range .navLinks}}
-            <a href="{{ .URL }}">{{ .Text }}</a>
+            {{ if .Status }}
+                <a href="{{ .URL }}">{{ .Text }}
+                    <span id="{{ .Text }}-status" class="peerStatus">
+                        <span class="statusDot online"></span>
+                    </span>
+                </a>
+            {{ else }}
+                <a href="{{ .URL }}">{{ .Text }}
+                    <span id="{{ .Text }}-status" class="peerStatus">
+                        <span class="statusDot offline"></span>
+                    </span>
+                </a>
+            {{ end }}
         {{end}}
     </div>
     <div class="content">
