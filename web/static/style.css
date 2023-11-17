@@ -119,3 +119,13 @@
   float: right;
   cursor: pointer;
 }
+
+pre.peer-info-container {
+  white-space: nowrap; /* Prevents line breaks */
+  /*font-family: 'Courier New', monospace; /* Optional: Use a monospaced font for better alignment */
+  /*background-color: #18232C; /* Set your desired background color */
+}
+
+pre.peer-info-container div {
+  margin-bottom: 10px; /* Adjust as needed for spacing between items */
+}

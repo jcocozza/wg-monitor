@@ -78,11 +78,17 @@ func main() {
         })
     })
 
+
+    router.GET("/configurations/:interfaceName/newPeer", func(c *gin.Context) {
+        c.HTML(http.StatusOK, "newPeerPopup.html", gin.H{})
+    })
+
     // API ROUTES
     router.GET("/api/update/configurations/:interfaceName", api.UpdateConfiguration(wgConfs))
     router.POST("/api/configurations/:interfaceName/newPeer", api.AddPeer(wireguardPath, wgConfs))
     
     // Run the server
+    //router.Run("143.229.244.67:8080")
     router.Run("10.5.5.1:8080")
 
 }

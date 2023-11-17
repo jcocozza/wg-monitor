@@ -4,8 +4,6 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
-
-	"github.com/jcocozza/wg-monitor/utils"
 )
 
 // Check all the .conf files in the wireguard path.
@@ -225,15 +223,17 @@ func GenerateNewPeer(configurationPath string, peerName string, allowedIPs []str
 	peer := NewPeer(peerName, publicKey, privateKey, allowedIPs)
 	out := peer.confFileOut(dns, vpnEndpoint, confs.ConfMap[confName], addressesToUse, persistentKeepAlive)
 
-
+	/*
 	sanatizedKey := utils.SanatizeKey(peer.PublicKey)
 	peerFolderPath := "web/createdPeers/"+sanatizedKey
 	utils.MkDir(peerFolderPath)
 	utils.GenerateQRCode(peerFolderPath+"/qrcode.png", out)
 	utils.WriteFile(peerFolderPath+"/peer.conf",out)
-
+	utils.WriteFile(peerFolderPath+"/peerSever.conf",peer.ServerConfFileOut())
+	*/
+	//utils.AppendTo(configurationPath,peer.ServerConfFileOut()) add the peer to the server's conf file
+	//ReloadServer(confName) reload the wireguard server in the background
 	
 	//"web/qrcodes/qrcode"+name+".png"
-	//utils.AppendTo(configurationPath, out) // add the new peer to the server .conf file
 	return out
 }

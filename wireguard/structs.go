@@ -73,16 +73,14 @@ func NewConfiguration(interfaceName string, name string, address string, listenP
 // i.e. the stuff corresponding to [Interface] in the .conf of the server
 // this is the file on the server machine
 func (conf *Configuration) ServerConfFileOut() []byte {
-	out := fmt.Sprintf(`[Interface]
-	# Name = %s
-	Address = %s
-	ListenPort = %d
-	PrivateKey = %s
-	DNS = %s
-	PostUp = %s
-	PostDown = %s
-	`, conf.Name, conf.Address, conf.ListenPort, conf.PrivateKey, conf.DNS, conf.PostUp, conf.PostDown)
-
+	out := "[Interface]\n"
+	out += fmt.Sprintf("# Name = %s\n", conf.Name)
+	out += fmt.Sprintf("Address = %s\n", conf.Address)
+	out += fmt.Sprintf("ListenPort = %d\n", conf.ListenPort)
+	out += fmt.Sprintf("PrivateKey = %s\n", conf.PrivateKey)
+	out += fmt.Sprintf("DNS = %s\n", conf.DNS)
+	out += fmt.Sprintf("PostUp = %s\n", conf.PostUp)
+	out += fmt.Sprintf("PostDown = %s\n", conf.PostDown)
 	// add in peers
 	for _, peer := range conf.Peers {
 		out += "\n"
@@ -142,10 +140,10 @@ func (p *Peer) setStatus() {
 func (p *Peer) ServerConfFileOut() []byte {
 	allowedIPsString := strings.Join(p.AllowedIPs,",")
 	
-	out := fmt.Sprintf(`[Peer]
-	# Name = %s
-	PublicKey = %s
-	AllowedIPs = %s`, p.Name, p.PublicKey, allowedIPsString)
+	out := ("[Peer]\n")
+	out += fmt.Sprintf("# Name = %s\n",p.Name)
+	out += fmt.Sprintf("PublicKey = %s\n",p.PublicKey)
+	out += fmt.Sprintf("AllowedIPs = %s\n", allowedIPsString)
 
 	return []byte(out)
 }

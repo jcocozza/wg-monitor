@@ -46,7 +46,7 @@
                     </div>
                 </summary>
 
-                <div class="peer-info-container">
+                <pre class="peer-info-container">
                     <div class="publickey">
                         Public Key: <span id="{{ $peer.PublicKey }}-publickey">{{ $peer.PublicKey }}</span>
                     </div>
@@ -59,7 +59,7 @@
                     <div class="allowedips">
                         Allowed IPs: <span id="{{ $peer.PublicKey }}-allowedips">{{ $peer.AllowedIPs }}</span>
                     </div>
-                </div>
+                </pre>
             </details>
         </div>
         {{ end }}
@@ -70,8 +70,8 @@
     <button id="showFormBtn" class="btn btn-primary" role="button">Show Form</button>
     <div id="newPeerForm" class="popup">
         <div class="popup-content">
-            <span class="close" onclick="closeForm()">&times;</span>
-            <form id="formForNewPeer" action="/api/configurations/{{ .interface.Name }}/newPeer" method="post">
+            <span class="close" onclick="closeElement('newPeerForm')">&times;</span>
+            <form id="formForNewPeer" method="post">
                 <!-- Your form fields go here -->
                 <label for="name">name:</label>
                 <input type="text" id="name" name="name">
@@ -95,7 +95,6 @@
             </form>
         </div>
     </div>
-
 </body>
 
 <script>
@@ -109,6 +108,53 @@
         fetchUpdateInterface("{{ .interface.Name }}");
         setInterval(function(){fetchUpdateInterface("{{ .interface.Name }}");}, 5000);
     });
+
+    // show new peer form
+    document.getElementById('showFormBtn').addEventListener('click', function() {
+        document.getElementById('newPeerForm').style.display = 'block';
+    });
+
+
+    function confirmSubmission() {
+        var form = document.getElementById("formForNewPeer");
+        if (!form.checkValidity()) {
+            // If the form is not valid, do not submit
+            form.reportValidity();
+            return false;
+        }
+
+        event.preventDefault();
+        // Confirm submission with a dialog
+        var confirmed = confirm("Are you sure you want to create a new peer? It will modify this interface's .conf file and reload the server in the background");
+        if (!confirmed) {
+            // If not confirmed, prevent the form submission
+            return false;
+        }
+        var formData = new FormData(document.getElementById("formForNewPeer"));
+        // If confirmed, allow the form submission
+        closeElement("newPeerForm")
+        fetch("/api/configurations/{{ .interface.Name }}/newPeer", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            var senddata = {
+                textData: data.textData,
+                qrCodeData: data.qrCodeData
+            };
+
+            // Send the data to the popup window
+            var popupWindow = window.open("/configurations/{{ .interface.Name }}/newPeer", "ResizablePopup", "resizable=yes,scrollbars=yes,width=850,height=350");            
+            setTimeout(function () {
+                // Send the data to the popup window
+                popupWindow.postMessage({ popupData: senddata }, '*');
+            }, 500);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    }
 </script>
 
 {{ template "footer.html" .}}
