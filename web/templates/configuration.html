@@ -64,20 +64,23 @@
         </div>
         {{ end }}
     </div>
-    <input type="checkbox" role="switch" id="toggle-switch" onclick="toggleClass('grid-container', 'new-class', 'peers')">
-    <label for="toggle-switch"> Row-Grid </label>
 
-    <button id="showFormBtn" class="btn btn-primary" role="button">Show Form</button>
+    <div class="options-container">
+        <input type="checkbox" role="switch" id="toggle-switch" onclick="toggleClass('grid-container', 'new-class', 'peers')">
+        <label for="toggle-switch"> Row-Grid </label>
+
+        <button id="showFormBtn" class="custom-button" role="button">New Peer</button>
+    </div>
     <div id="newPeerForm" class="popup">
         <div class="popup-content">
             <span class="close" onclick="closeElement('newPeerForm')">&times;</span>
             <form id="formForNewPeer" method="post">
                 <!-- Your form fields go here -->
                 <label for="name">name:</label>
-                <input type="text" id="name" name="name">
+                <input type="text" id="name" name="name" value="Kindly Salad">
                 
                 <label for="allowedIPs">allowedIPs:</label>
-                <input type="text" id="allowedIPs" name="allowedIPs" required>
+                <input type="text" id="allowedIPs" name="allowedIPs" value="10.0.0.1" required>
                 
                 <label for="dns">DNS:</label>
                 <input type="text" id="dns" name="dns" value="1.1.1.1">

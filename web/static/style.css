@@ -107,7 +107,7 @@
   transform: translate(-50%, -50%);
   border: 1px solid #ccc;
   padding: 15px;
-  background-color: #fff;
+  /*background-color: rgba(200, 4, 254, 0);*/
   z-index: 1;
 }
 
@@ -128,4 +128,14 @@ pre.peer-info-container {
 
 pre.peer-info-container div {
   margin-bottom: 10px; /* Adjust as needed for spacing between items */
+}
+
+.custom-button {
+  max-width: 200px; /* Set a maximum width for the button */
+  padding: 10px; /* Add padding for better appearance */
+  /* Add any other styling you need */
+}
+
+.options-container {
+  text-align: right;
 }
