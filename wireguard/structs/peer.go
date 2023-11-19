@@ -37,6 +37,7 @@ func (peer *Peer) SetPrivateKey(privateKey string) {
 
 func (peer *Peer) SetParent(parent *Configuration) {
 	peer.Parent = parent
+	slog.Info("[Peer "+peer.PublicKey+"] Set Parent "+parent.ConfName)
 }
 
 // check each of the peer's allowed ips

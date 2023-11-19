@@ -10,9 +10,7 @@ function toggleClass(oldClass ,newClass, elementId) {
 }
 
 function updateInterface(data){
-    console.log(data)
     data.forEach(peer => {
-        console.log(peer.publicKey)
         var peerId = peer.publicKey;
         var publickey = document.getElementById(peerId + "-publickey");
         var endpoint = document.getElementById(peerId + "-endpoint");
@@ -59,10 +57,10 @@ function fetchUpdateAllConfigurations(){
     .then(data => UpdateAllConfigurations(data))
     .catch(error => console.error("Error:", error))
 }
+fetchUpdateAllConfigurations() //call on init
 setInterval(fetchUpdateAllConfigurations, 5000)
 
 function UpdateAllConfigurations(data){
-    console.log(data)
 
     for (let confName in data) {
         let cStatus = data[confName];

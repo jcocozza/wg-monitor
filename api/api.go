@@ -36,7 +36,7 @@ func UpdateConfigurations(confs WgConfig) func(c *gin.Context) {
 		statusMap := make(map[string]bool)
 		for _,conf := range confs {
 			conf.Refresh()
-			statusMap[conf.NetworkInfo.Name] = conf.NetworkInfo.Status
+			statusMap[conf.ConfName] = conf.NetworkInfo.Status
 		}
 		/*
 		jsonData, err := json.Marshal(confs.ConfMap[confName])
@@ -75,7 +75,7 @@ func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 		persistentKeepAliveString := c.PostForm("persistentKeepAlive")
 		persistentKeepAlive, _ := strconv.Atoi(persistentKeepAliveString) // html form ensures that we get an integer
 		
-		peerFile := confs["confName"].GenerateNewPeer(confFilePath, nickName, allowedIPs, dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
+		peerFile := confs[confName].GenerateNewPeer(confFilePath, nickName, allowedIPs, dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
 
 		/*
 		data := map[string]interface{}{

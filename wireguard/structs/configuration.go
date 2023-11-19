@@ -164,6 +164,11 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 		}
 		tempPeer = NewPeer(peerNickName, peerPublicKey,"",peerAllowedIPs, configuration)
 		configuration.AddPeer(tempPeer)
+
+		// clear vars
+		peerNickName = ""
+		peerPublicKey = ""
+		peerAllowedIPs = []string{}
 	}
 	return configuration
 }
@@ -179,6 +184,7 @@ func (conf *Configuration) AttachNetwork(network *NetworkInterface) {
 func (conf *Configuration) AddPeer(peer *Peer) {
 	conf.PeerMap[peer.PublicKey] = peer
 	conf.Peers = append(conf.Peers, peer)
+	peer.SetParent(conf)
 	slog.Info("[Configuration " + conf.ConfName + "] Added Peer: " + conf.PeerMap[peer.PublicKey].PublicKey)
 }
 
@@ -211,11 +217,10 @@ func (conf *Configuration) Refresh() {
 
 			if strings.HasPrefix(line, endPointPrefix) {
 				endPoint = strings.TrimPrefix(line, endPointPrefix)
-				slog.Info("[Configuration " + conf.ConfName + "][PeerInfo]: Endpoint " + endPoint)
 			}
 			if strings.HasPrefix(line, latestHandshakePrefix) {
 				latestHandshake = strings.TrimPrefix(line, latestHandshakePrefix)
-				slog.Info("[Configuration " + conf.ConfName + "][PeerInfo]: Latest Handshake " + latestHandshake)
+				
 			}
 			if strings.HasPrefix(line, transferPrefix) {
 				transferTrim := strings.TrimPrefix(line, transferPrefix)
@@ -233,11 +238,16 @@ func (conf *Configuration) Refresh() {
 			transfer["Received"] = "0 Mib received"
 		}
 
-		slog.Info("[Configuration " + conf.ConfName + "][PeerInfo]: Received " + transfer["Received"])
-		slog.Info("[Configuration " + conf.ConfName + "][PeerInfo]: Sent " + transfer["Sent"])
+		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo]: Endpoint " + endPoint)
+		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo]: Latest Handshake " + latestHandshake)
+		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo]: Received " + transfer["Received"])
+		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo]: Sent " + transfer["Sent"])
 
 		conf.PeerMap[publicKey].UpdatePeerInfo(NewPeerInfo(publicKey, endPoint, latestHandshake, transfer))
 		conf.PeerMap[publicKey].SetStatus() // after peer info has been updated, we can check to see if the peer is actually online
+
+		endPoint = ""
+		latestHandshake = ""
 	}
 }
 
