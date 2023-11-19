@@ -13,7 +13,8 @@ func WgSpecific(interfaceName string) []byte {
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
-		slog.Error("Failed to run wg show "+ interfaceName)
+		// might not be an error, if the interface isn't up, there will be an error.
+		slog.Debug("Failed to run wg show "+ interfaceName)
 		return nil
 	}
 

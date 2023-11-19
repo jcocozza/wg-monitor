@@ -4,6 +4,7 @@ import (
 	//"encoding/json"
 	//"fmt"
 	"encoding/base64"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ type WgConfig map[string]*s.Configuration
 func UpdateConfiguration(confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		configurationName := c.Param("configurationName")
+		slog.Info("[API] Update Configuration: "+configurationName)
 		// the configuration name is the wrong thing???
 		if conf, ok := confs[configurationName]; ok && conf != nil {
 			conf.Refresh()

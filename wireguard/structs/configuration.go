@@ -80,11 +80,13 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 		confNickNamePrefix := "# Name = "
 		if strings.HasPrefix(ln, confNickNamePrefix) {
 			confNickName = strings.TrimSpace(strings.TrimPrefix(ln, confNickNamePrefix))
+			slog.Info("[Configuration " + confName + "]: Peer Nickname " + confNickName)
 		}
 
 		confAddressPrefix := "Address = "
 		if strings.HasPrefix(ln, confAddressPrefix) {
 			confAddress = strings.TrimSpace(strings.TrimPrefix(ln, confAddressPrefix))
+			slog.Info("[Configuration " + confName + "]: Configuration Address " + confAddress)
 		}
 
 		confListenPortPrefix := "ListenPort = "
@@ -95,26 +97,31 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 				slog.Error("Failed to parse listening port")
 				panic(err)
 			}
+			slog.Info("[Configuration " + confName + "]: Configuration ListenPort " + listenPortStr)
 		}
 
 		confPrivateKeyPrefix := "PrivateKey = "
 		if strings.HasPrefix(ln, confPrivateKeyPrefix) {
 			confPrivateKey = strings.TrimSpace(strings.TrimPrefix(ln, confPrivateKeyPrefix))
+			slog.Info("[Configuration " + confName + "]: Configuration Private Key " + confPrivateKey)
 		}
 
 		confDnsPrefix := "DNS = "
 		if strings.HasPrefix(ln, confDnsPrefix) {
 			confDns = strings.TrimSpace(strings.TrimPrefix(ln, confDnsPrefix))
+			slog.Info("[Configuration " + confName + "]: Configuration DNS " + confDns)
 		}
 
 		confpostUpPrefix := "PostUp = "
 		if strings.HasPrefix(ln, confpostUpPrefix) {
 			confPostUp = strings.TrimSpace(strings.TrimPrefix(ln, confpostUpPrefix))
+			slog.Info("[Configuration " + confName + "]: Configuration PostUp " + confPostUp)
 		}
 
 		confPostDownPrefix := "PostDown = "
 		if strings.HasPrefix(ln, confPostDownPrefix) {
 			confPostDown = strings.TrimSpace(strings.TrimPrefix(ln, confPostDownPrefix))
+			slog.Info("[Configuration " + confName + "]: Configuration PostDown " + confPostDown)
 		}
 
 	}
@@ -134,18 +141,20 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 			nickNamePrefix := "# Name = "
 			if strings.HasPrefix(line, nickNamePrefix) {
 				peerNickName = strings.TrimSpace(strings.TrimPrefix(line, nickNamePrefix))
+				slog.Info("[Configuration " + confName + "][Peer]: Peer Nickname " + peerNickName)
 			}
 	
 			publicKeyPrefix := "PublicKey = "
 			if strings.HasPrefix(line, publicKeyPrefix) {
 				peerPublicKey = strings.TrimSpace(strings.TrimPrefix(line, publicKeyPrefix))
+				slog.Info("[Configuration " + confName + "][Peer]: Peer Public Key " + peerPublicKey)
 			}
 		
 			allowedIPsPrefix := "AllowedIPs = "
 			if strings.HasPrefix(line, allowedIPsPrefix) {
 				allowedIPsLong := strings.TrimPrefix(line, allowedIPsPrefix)
+				slog.Info("[Configuration " + confName + "][Peer]: Allowed IPs " + allowedIPsLong)
 				allowedIPsList := strings.Split(allowedIPsLong, ",")
-	
 				for _ ,addr := range allowedIPsList {
 					ip := strings.Split(addr,"/")
 					peerAllowedIPs = append(peerAllowedIPs, ip[0]) //we don't need after the slash i.e. 10.5.5.1/32 -> 10.5.5.1
@@ -156,7 +165,6 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 		tempPeer = NewPeer(peerNickName, peerPublicKey,"",peerAllowedIPs, configuration)
 		configuration.AddPeer(tempPeer)
 	}
-	fmt.Println(configuration.PeerMap)
 	return configuration
 }
 
@@ -164,11 +172,14 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 func (conf *Configuration) AttachNetwork(network *NetworkInterface) {
 	//slog.Info("Attaching Network: " + network.Name)
 	conf.NetworkInfo = network
+	slog.Info("[Configuration " + conf.ConfName + "] Attaching Network: " + conf.NetworkInfo.Name)
 }
 
 // Add a peer to the configuration
 func (conf *Configuration) AddPeer(peer *Peer) {
 	conf.PeerMap[peer.PublicKey] = peer
+	conf.Peers = append(conf.Peers, peer)
+	slog.Info("[Configuration " + conf.ConfName + "] Added Peer: " + conf.PeerMap[peer.PublicKey].PublicKey)
 }
 
 // parse the output of wg show <interfaceName> to determine peer data
@@ -200,9 +211,11 @@ func (conf *Configuration) Refresh() {
 
 			if strings.HasPrefix(line, endPointPrefix) {
 				endPoint = strings.TrimPrefix(line, endPointPrefix)
+				slog.Info("[Configuration " + conf.ConfName + "][PeerInfo]: Endpoint " + endPoint)
 			}
 			if strings.HasPrefix(line, latestHandshakePrefix) {
 				latestHandshake = strings.TrimPrefix(line, latestHandshakePrefix)
+				slog.Info("[Configuration " + conf.ConfName + "][PeerInfo]: Latest Handshake " + latestHandshake)
 			}
 			if strings.HasPrefix(line, transferPrefix) {
 				transferTrim := strings.TrimPrefix(line, transferPrefix)
@@ -210,6 +223,7 @@ func (conf *Configuration) Refresh() {
 	
 				transfer["Received"] = strings.TrimSpace(transferS[0])
 				transfer["Sent"] = strings.TrimSpace(transferS[1])
+
 			}
 		}
 		if transfer["Sent"] == "" {
@@ -218,6 +232,10 @@ func (conf *Configuration) Refresh() {
 		if transfer["Received"] == "" {
 			transfer["Received"] = "0 Mib received"
 		}
+
+		slog.Info("[Configuration " + conf.ConfName + "][PeerInfo]: Received " + transfer["Received"])
+		slog.Info("[Configuration " + conf.ConfName + "][PeerInfo]: Sent " + transfer["Sent"])
+
 		conf.PeerMap[publicKey].UpdatePeerInfo(NewPeerInfo(publicKey, endPoint, latestHandshake, transfer))
 		conf.PeerMap[publicKey].SetStatus() // after peer info has been updated, we can check to see if the peer is actually online
 	}

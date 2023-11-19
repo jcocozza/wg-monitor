@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"log/slog"
 	"strconv"
 	"strings"
 
@@ -35,12 +36,12 @@ func EmptyNetworkInterface() *NetworkInterface {
 // Check whether a given Network interface is running or not. If so return true.
 func (network *NetworkInterface) CheckStatus() bool {
 	result := c.WgSpecific(network.Name)
-
 	if result != nil {
 		network.Status = true
 	} else {
 		network.Status = false
 	}
+	slog.Info("[Network "+network.Name+"] status "+strconv.FormatBool(network.Status))
 	return network.Status
 }
 
@@ -68,6 +69,10 @@ func LoadAllNetworkInterfaceInfo() map[string]*NetworkInterface {
 			
 			networkInterface = NewNetworkInterface(interfaceName, publicKey, listeningPort, true)
 			networkMap[publicKey] = networkInterface
+
+			slog.Info("[Network Interface] name "+interfaceName)
+			slog.Info("[Network Interface] public key "+publicKey)
+			slog.Info("[Network Interface] listeningPort ",listeningPort)
 		}
 
 	}

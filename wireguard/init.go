@@ -18,7 +18,7 @@ import (
 func LoadWireGuard(wireguardPath string) map[string]*s.Configuration {
 
 	networkInterfaces := s.LoadAllNetworkInterfaceInfo()
-	
+
 	files := strings.TrimSpace(string(c.GetConfNames(wireguardPath)))
 	fileList := strings.Split(files, "\n")
 
@@ -37,8 +37,10 @@ func LoadWireGuard(wireguardPath string) map[string]*s.Configuration {
 			conf.Refresh()
 		} else {
 			conf.AttachNetwork(s.EmptyNetworkInterface())
+			conf.Refresh()
 		}
 		configurationMap[conf.ConfName] = conf
 	}
+
 	return configurationMap
 }

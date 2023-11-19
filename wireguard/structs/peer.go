@@ -13,7 +13,7 @@ type Peer struct {
 	PrivateKey  string			`json:"privateKey"`
 	AllowedIPs 	[]string		`json:"allowedIPs"`
 	Info 		*PeerInfo		`json:"info"`
-	Parent      *Configuration	`json:"parent"`
+	Parent      *Configuration	`json:"-"`
 }
 
 func NewPeer(nickName string, publicKey string, privateKey string, allowedIPs []string, parent *Configuration) *Peer {
@@ -94,11 +94,11 @@ func (peer *Peer) ConfFileOut(dns string, vpnEndPoint string, addressesToUse []s
 
 
 type PeerInfo struct {
-	PublicKey		string				`json:"PublicKey"`
-	EndPoint 		string				`json:"EndPoint"`
-	LatestHandshake string				`json:"LatestHandshake"`
-	Transfer 		map[string]string	`json:"Transfer"` // transfer: sent/received 
-	Status			bool				`json:"Status"`
+	PublicKey		string				`json:"publicKey"`
+	EndPoint 		string				`json:"endPoint"`
+	LatestHandshake string				`json:"latestHandshake"`
+	Transfer 		map[string]string	`json:"transfer"` // transfer: sent/received 
+	Status			bool				`json:"status"`
 }
 
 func NewPeerInfo(publicKey string, endpoint string, latestHandshake string, transfer map[string]string) *PeerInfo {

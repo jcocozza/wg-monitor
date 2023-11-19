@@ -10,8 +10,10 @@ function toggleClass(oldClass ,newClass, elementId) {
 }
 
 function updateInterface(data){
+    console.log(data)
     data.forEach(peer => {
-        var peerId = peer.PublicKey;
+        console.log(peer.publicKey)
+        var peerId = peer.publicKey;
         var publickey = document.getElementById(peerId + "-publickey");
         var endpoint = document.getElementById(peerId + "-endpoint");
         var allowedips = document.getElementById(peerId + "-allowedips");
@@ -21,7 +23,7 @@ function updateInterface(data){
 
         var loadingPeer = document.getElementById(peerId + "-index")
         var peerStatus = document.getElementById(peerId + "-status")
-        if (peer.Info.Status) {
+        if (peer.info.status) {
             loadingPeer.setAttribute("aria-busy", "false");
             peerStatus.innerHTML = '<span class="statusDot online"></span>';
     
@@ -30,12 +32,12 @@ function updateInterface(data){
             peerStatus.innerHTML = '<span class="statusDot offline"></span>';
         }
 
-        publickey.innerHTML = peer.PublicKey;     
-        endpoint.innerHTML = peer.Info.EndPoint; 
-        allowedips.innerHTML = peer.AllowedIPs; 
-        latesthandshake.innerHTML = peer.Info.LatestHandshake; 
-        sent.innerHTML = peer.Info.Transfer.Sent; 
-        received.innerHTML = peer.Info.Transfer.Received; 
+        publickey.innerHTML = peer.publicKey;     
+        endpoint.innerHTML = peer.info.endPoint; 
+        allowedips.innerHTML = peer.allowedIPs; 
+        latesthandshake.innerHTML = peer.info.latestHandshake; 
+        sent.textContent = peer.info.transfer.Sent; 
+        received.textContent = peer.info.transfer.Received; 
 
     })
 }

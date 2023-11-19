@@ -23,6 +23,8 @@ type NavLink struct {
 
 func initWGMonitor(wireguardPath string) api.WgConfig {
     wgConfs := wireguard.LoadWireGuard(wireguardPath)
+    //fmt.Println(wgConfs["utun3"])
+    fmt.Println(wgConfs["wg0"].Peers)
     return wgConfs
 }
 
@@ -87,7 +89,7 @@ func main() {
     })
 
     // API ROUTES
-    router.GET("/api/update/configurations/:interfaceName", api.UpdateConfiguration(wgConfs))
+    router.GET("/api/update/configurations/:configurationName", api.UpdateConfiguration(wgConfs))
     router.GET("/api/update/configurations/all", api.UpdateConfigurations(wgConfs))
     router.POST("/api/configurations/:confName/newPeer", api.AddPeer(wireguardPath, wgConfs))
     
