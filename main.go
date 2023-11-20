@@ -90,7 +90,7 @@ func main() {
 
     // API ROUTES
     router.GET("/api/update/configurations/:configurationName", api.UpdateConfiguration(wgConfs))
-    router.GET("/api/update/configurations/all", api.UpdateConfigurations(wgConfs))
+    router.GET("/api/update/networks/all", api.UpdateNetworks(wgConfs))
     router.POST("/api/configurations/:confName/newPeer", api.AddPeer(wireguardPath, wgConfs))
     
     // Run the server

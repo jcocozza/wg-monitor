@@ -31,21 +31,15 @@ func UpdateConfiguration(confs WgConfig) func(c *gin.Context) {
 	}
 }
 
-func UpdateConfigurations(confs WgConfig) func(c *gin.Context) {
+// this function will replate UpdateConfigurations()
+func UpdateNetworks(confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		statusMap := make(map[string]bool)
 		for _,conf := range confs {
-			conf.Refresh()
+			conf.NetworkInfo.CheckStatus()
 			statusMap[conf.ConfName] = conf.NetworkInfo.Status
 		}
-		/*
-		jsonData, err := json.Marshal(confs.ConfMap[confName])
-
-		if err != nil {
-			http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
-			return
-		}*/
-		c.JSON(http.StatusOK, statusMap) //return the desired interface data from <confName>
+		c.JSON(http.StatusOK, statusMap)
 	}
 }
 

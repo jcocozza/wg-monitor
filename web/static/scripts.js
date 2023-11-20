@@ -51,16 +51,16 @@ function closeElement(formId) {
 }
 
 
-function fetchUpdateAllConfigurations(){
-    fetch("/api/update/configurations/all")
+function fetchUpdateNetworks(){
+    fetch("/api/update/networks/all")
     .then(response => response.json())
-    .then(data => UpdateAllConfigurations(data))
+    .then(data => UpdateNetworks(data))
     .catch(error => console.error("Error:", error))
 }
-fetchUpdateAllConfigurations() //call on init
-setInterval(fetchUpdateAllConfigurations, 5000)
+fetchUpdateNetworks() //call on init
+setInterval(fetchUpdateNetworks, 5000)
 
-function UpdateAllConfigurations(data){
+function UpdateNetworks(data){
 
     for (let confName in data) {
         let cStatus = data[confName];
