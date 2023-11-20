@@ -57,6 +57,7 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 
 	if err != nil {
 		slog.Error("Failed to read configuration file")
+		panic(err)
 	}
 
 	conf := string(file)
@@ -80,13 +81,13 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 		confNickNamePrefix := "# Name = "
 		if strings.HasPrefix(ln, confNickNamePrefix) {
 			confNickName = strings.TrimSpace(strings.TrimPrefix(ln, confNickNamePrefix))
-			slog.Info("[Configuration " + confName + "]: Peer Nickname " + confNickName)
+			slog.Info("[Configuration " + confName + "] Configuration Nickname: " + confNickName)
 		}
 
 		confAddressPrefix := "Address = "
 		if strings.HasPrefix(ln, confAddressPrefix) {
 			confAddress = strings.TrimSpace(strings.TrimPrefix(ln, confAddressPrefix))
-			slog.Info("[Configuration " + confName + "]: Configuration Address " + confAddress)
+			slog.Info("[Configuration " + confName + "] Configuration Address: " + confAddress)
 		}
 
 		confListenPortPrefix := "ListenPort = "
@@ -97,31 +98,31 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 				slog.Error("Failed to parse listening port")
 				panic(err)
 			}
-			slog.Info("[Configuration " + confName + "]: Configuration ListenPort " + listenPortStr)
+			slog.Info("[Configuration " + confName + "] Configuration ListenPort: " + listenPortStr)
 		}
 
 		confPrivateKeyPrefix := "PrivateKey = "
 		if strings.HasPrefix(ln, confPrivateKeyPrefix) {
 			confPrivateKey = strings.TrimSpace(strings.TrimPrefix(ln, confPrivateKeyPrefix))
-			slog.Info("[Configuration " + confName + "]: Configuration Private Key " + confPrivateKey)
+			slog.Info("[Configuration " + confName + "] Configuration Private Key: " + confPrivateKey)
 		}
 
 		confDnsPrefix := "DNS = "
 		if strings.HasPrefix(ln, confDnsPrefix) {
 			confDns = strings.TrimSpace(strings.TrimPrefix(ln, confDnsPrefix))
-			slog.Info("[Configuration " + confName + "]: Configuration DNS " + confDns)
+			slog.Info("[Configuration " + confName + "] Configuration DNS: " + confDns)
 		}
 
 		confpostUpPrefix := "PostUp = "
 		if strings.HasPrefix(ln, confpostUpPrefix) {
 			confPostUp = strings.TrimSpace(strings.TrimPrefix(ln, confpostUpPrefix))
-			slog.Info("[Configuration " + confName + "]: Configuration PostUp " + confPostUp)
+			slog.Info("[Configuration " + confName + "] Configuration PostUp: " + confPostUp)
 		}
 
 		confPostDownPrefix := "PostDown = "
 		if strings.HasPrefix(ln, confPostDownPrefix) {
 			confPostDown = strings.TrimSpace(strings.TrimPrefix(ln, confPostDownPrefix))
-			slog.Info("[Configuration " + confName + "]: Configuration PostDown " + confPostDown)
+			slog.Info("[Configuration " + confName + "] Configuration PostDown: " + confPostDown)
 		}
 
 	}
@@ -141,19 +142,19 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 			nickNamePrefix := "# Name = "
 			if strings.HasPrefix(line, nickNamePrefix) {
 				peerNickName = strings.TrimSpace(strings.TrimPrefix(line, nickNamePrefix))
-				slog.Info("[Configuration " + confName + "][Peer]: Peer Nickname " + peerNickName)
+				slog.Info("[Configuration " + confName + "][Peer] Peer Nickname: " + peerNickName)
 			}
 	
 			publicKeyPrefix := "PublicKey = "
 			if strings.HasPrefix(line, publicKeyPrefix) {
 				peerPublicKey = strings.TrimSpace(strings.TrimPrefix(line, publicKeyPrefix))
-				slog.Info("[Configuration " + confName + "][Peer]: Peer Public Key " + peerPublicKey)
+				slog.Info("[Configuration " + confName + "][Peer] Peer Public Key: " + peerPublicKey)
 			}
 		
 			allowedIPsPrefix := "AllowedIPs = "
 			if strings.HasPrefix(line, allowedIPsPrefix) {
 				allowedIPsLong := strings.TrimPrefix(line, allowedIPsPrefix)
-				slog.Info("[Configuration " + confName + "][Peer]: Allowed IPs " + allowedIPsLong)
+				slog.Info("[Configuration " + confName + "][Peer] Allowed IPs: " + allowedIPsLong)
 				allowedIPsList := strings.Split(allowedIPsLong, ",")
 				for _ ,addr := range allowedIPsList {
 					ip := strings.Split(addr,"/")
@@ -238,10 +239,10 @@ func (conf *Configuration) Refresh() {
 			transfer["Received"] = "0 Mib received"
 		}
 
-		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo]: Endpoint " + endPoint)
-		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo]: Latest Handshake " + latestHandshake)
-		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo]: Received " + transfer["Received"])
-		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo]: Sent " + transfer["Sent"])
+		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo] Endpoint: " + endPoint)
+		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo] Latest Handshake: " + latestHandshake)
+		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo] Received: " + transfer["Received"])
+		slog.Info("[Configuration " + conf.ConfName + "][Peer "+publicKey+"][PeerInfo] Sent: " + transfer["Sent"])
 
 		conf.PeerMap[publicKey].UpdatePeerInfo(NewPeerInfo(publicKey, endPoint, latestHandshake, transfer))
 		conf.PeerMap[publicKey].SetStatus() // after peer info has been updated, we can check to see if the peer is actually online
@@ -253,22 +254,12 @@ func (conf *Configuration) Refresh() {
 
 // returns the peer configuration file and the peer's server configuration in that order
 func (conf *Configuration) GenerateNewPeer(configurationPath string, peerNickName string, allowedIPs []string, dns string, vpnEndpoint string, addressesToUse []string, persistentKeepAlive int) ([]byte, []byte){
+	slog.Info("[Configuration " + conf.ConfName + "] Generating New Peer")
 	privateKey, publicKey := c.GenerateKeyPair()
 	peer := NewPeer(peerNickName, publicKey, privateKey, allowedIPs, conf)
 	peerConf := peer.ConfFileOut(dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
 	peerServerConf := peer.ServerConfFileOut()
-	/*
-	sanatizedKey := utils.SanatizeKey(peer.PublicKey)
-	peerFolderPath := "web/createdPeers/"+sanatizedKey
-	utils.MkDir(peerFolderPath)
-	utils.GenerateQRCode(peerFolderPath+"/qrcode.png", out)
-	utils.WriteFile(peerFolderPath+"/peer.conf",out)
-	utils.WriteFile(peerFolderPath+"/peerSever.conf",peer.ServerConfFileOut())
-	*/
-	//utils.AppendTo(configurationPath,peer.ServerConfFileOut()) add the peer to the server's conf file
-	//ReloadServer(confName) reload the wireguard server in the background
-	
-	//"web/qrcodes/qrcode"+name+".png"
+
 	return peerConf, peerServerConf
 }
 
@@ -276,6 +267,7 @@ func (conf *Configuration) GenerateNewPeer(configurationPath string, peerNickNam
 // i.e. the stuff corresponding to [Interface] in the .conf of the server
 // this is the file on the server machine
 func (conf *Configuration) ServerConfFileOut() []byte {
+	slog.Info("[Configuration " + conf.ConfName + "] Config file out")
 	out := "[Interface]\n"
 	out += fmt.Sprintf("# Name = %s\n", conf.NickName)
 	out += fmt.Sprintf("Address = %s\n", conf.Address)

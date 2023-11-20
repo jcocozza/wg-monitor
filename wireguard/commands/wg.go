@@ -62,14 +62,15 @@ func WgPubKey(privateKey string) []byte {
 }
 
 // reload the server without a reboot (useful when adding new peers)
-func WgReloadServer(confName string) {
+func WgSyncConf(confName string) {
+	slog.Info("Syncing conf "+confName)
 	cmdString := fmt.Sprintf("sudo wg syncconf %s <(sudo wg-quick strip %s)", confName, confName) 
 	cmd := exec.Command(cmdString)
 
 	err := cmd.Run()
 
 	if err != nil {
-		slog.Error("Failed to reload server: "+confName)
+		slog.Error("Failed to reload conf: "+confName)
 	}
 }
 

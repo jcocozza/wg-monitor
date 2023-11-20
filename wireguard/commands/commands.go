@@ -9,6 +9,7 @@ import (
 // wireguardPath -- path to folder;
 // Get the .conf files in the wireguardPath
 func GetConfNames(wireguardPath string) []byte {
+	slog.Debug("getting configuration names...")
 	cmd1 := exec.Command("ls", wireguardPath)
 	cmd2 := exec.Command("grep", ".conf")
 
@@ -33,6 +34,7 @@ func GetConfNames(wireguardPath string) []byte {
 // generate a private, public key pairing
 // the basic idea is: "wg genkey | tee client_privatekey | wg pubkey > client_publickey"
 func GenerateKeyPair() (string, string){
+	slog.Debug("generating keypair...")
 	privateKey := WgGenKey()
 	publicKey := WgPubKey(string(privateKey))
 

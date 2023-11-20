@@ -1,8 +1,6 @@
 package api
 
 import (
-	//"encoding/json"
-	//"fmt"
 	"encoding/base64"
 	"log/slog"
 	"net/http"
@@ -10,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	//"github.com/jcocozza/wg-monitor/utils"
 	"github.com/jcocozza/wg-monitor/utils"
 	s "github.com/jcocozza/wg-monitor/wireguard/structs"
 	"github.com/jcocozza/wg-monitor/wireguard/commands"
@@ -35,6 +32,7 @@ func UpdateConfiguration(confs WgConfig) func(c *gin.Context) {
 // this function will replate UpdateConfigurations()
 func UpdateNetworks(confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		slog.Info("[API] Updating networks...")
 		statusMap := make(map[string]bool)
 		for _,conf := range confs {
 			conf.NetworkInfo.CheckStatus()
@@ -54,7 +52,9 @@ func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		confName := c.Param("confName")
 		confFilePath := wireguardPath+confName+".conf"
-	
+
+		slog.Info("[API] Adding Peer to "+confName)
+
 		nickName := c.PostForm("name")
 		
 		allowedIPsString := c.PostForm("allowedIPs")
@@ -72,29 +72,6 @@ func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 		
 		peerFile, peerServerConf := confs[confName].GenerateNewPeer(confFilePath, nickName, allowedIPs, dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
 
-		/*
-		data := map[string]interface{}{
-			"name": name,
-			"allowedIPs":allowedIPs,
-			"dns":dns,
-			"vpnEndpoint":vpnEndpoint,
-			"addressToUse":addressesToUse,
-			"persistentKeepAlive":persistentKeepAlive,
-		}
-		
-
-		c.JSON(http.StatusOK, data)
-		*/
-		/*
-		fmt.Println("Success:")
-		fmt.Println("name:",confName)
-		fmt.Println("name:",name)
-		fmt.Println("name:",allowedIPs)
-		fmt.Println("name:",dns)
-		fmt.Println("name:",vpnEndpoint)
-		fmt.Println("name:",addressesToUse)
-		fmt.Println("name:",persistentKeepAlive)
-		*/
 		qrPeerData := utils.QRCodeData(peerFile, 300)
 		str := base64.StdEncoding.EncodeToString(qrPeerData)
 		data := NewPeerData{
@@ -102,12 +79,11 @@ func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 			QRCodeData: str,
 		}
 
-		c.JSON(http.StatusOK, data)
-		//c.Header("Content-Type", "text/plain")
-		//c.String(http.StatusOK, string(peerFile))
-		commands.WgReloadServer(confName)
-		utils.AppendTo(confFilePath, peerServerConf)
-		confs[confName] = s.LoadConfiguration(confFilePath, confName)
+		c.JSON(http.StatusOK, data) // send peer data to popup window
+
+		utils.AppendTo(confFilePath, peerServerConf) // add the peer to the config
+		commands.WgSyncConf(confName) // reload the wireguard configuration
+		confs[confName] = s.LoadConfiguration(confFilePath, confName) // reload the configuration from the wireguard server
 	}
 }
 

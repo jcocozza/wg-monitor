@@ -56,6 +56,7 @@ func (peer *Peer) SetStatus() {
 // return how the peer is represented in the server's .conf file
 // i.e the stuff corresponding to [Peer] in the .conf of the server
 func (peer *Peer) ServerConfFileOut() []byte {
+	slog.Info("[Configuration " + peer.PublicKey + "] Server config file out")
 	allowedIPsString := strings.Join(peer.AllowedIPs,",")
 	
 	out := ("[Peer]\n")
@@ -69,6 +70,7 @@ func (peer *Peer) ServerConfFileOut() []byte {
 // generate the configuration file for a peer
 // this is the file that will be on a CLIENT machine
 func (peer *Peer) ConfFileOut(dns string, vpnEndPoint string, addressesToUse []string, persistenKeepAlive int) []byte {
+	slog.Info("[Configuration " + peer.PublicKey + "] config file out")
 	allowedIPsString := strings.Join(peer.AllowedIPs,",")
 	addressesToUseString := strings.Join(addressesToUse,",")
 	
