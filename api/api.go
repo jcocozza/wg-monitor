@@ -4,6 +4,7 @@ import (
 	//"encoding/json"
 	//"fmt"
 	"encoding/base64"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,23 +12,35 @@ import (
 	"github.com/gin-gonic/gin"
 	//"github.com/jcocozza/wg-monitor/utils"
 	"github.com/jcocozza/wg-monitor/utils"
-	"github.com/jcocozza/wg-monitor/wireguard"
+	s "github.com/jcocozza/wg-monitor/wireguard/structs"
+	"github.com/jcocozza/wg-monitor/wireguard/commands"
 )
+type WgConfig map[string]*s.Configuration
 
-func UpdateConfiguration(confs *wireguard.WireGuardConfigurations) func(c *gin.Context) {
+func UpdateConfiguration(confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		confName := c.Param("confName")
+		configurationName := c.Param("configurationName")
+		slog.Info("[API] Update Configuration: "+configurationName)
+		// the configuration name is the wrong thing???
+		if conf, ok := confs[configurationName]; ok && conf != nil {
+			conf.Refresh()
+			c.JSON(http.StatusOK, conf.Peers) //return the desired interface data from <confName>
+		} else {
+			// Handle the case where the configuration does not exist or is nil
+			c.JSON(http.StatusNotFound, gin.H{"error": "Configuration not found"})
+		}
+	}
+}
 
-		wireguard.LoadPeerInfo(confName,confs)
-
-		/*
-		jsonData, err := json.Marshal(confs.ConfMap[confName])
-
-		if err != nil {
-			http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
-			return
-		}*/
-		c.JSON(http.StatusOK, confs.ConfMap[confName].Peers) //return the desired interface data from <confName>
+// this function will replate UpdateConfigurations()
+func UpdateNetworks(confs WgConfig) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		statusMap := make(map[string]bool)
+		for _,conf := range confs {
+			conf.NetworkInfo.CheckStatus()
+			statusMap[conf.ConfName] = conf.NetworkInfo.Status
+		}
+		c.JSON(http.StatusOK, statusMap)
 	}
 }
 
@@ -37,12 +50,12 @@ type NewPeerData struct {
 	QRCodeData  string `json:"qrCodeData"`
 }
 
-func AddPeer(wireguardPath string, confs *wireguard.WireGuardConfigurations) func(c *gin.Context) {
+func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		confName := c.Param("confName")
 		confFilePath := wireguardPath+confName+".conf"
 	
-		name := c.PostForm("name")
+		nickName := c.PostForm("name")
 		
 		allowedIPsString := c.PostForm("allowedIPs")
 		allowedIPs := strings.Split(allowedIPsString, ",")
@@ -57,7 +70,7 @@ func AddPeer(wireguardPath string, confs *wireguard.WireGuardConfigurations) fun
 		persistentKeepAliveString := c.PostForm("persistentKeepAlive")
 		persistentKeepAlive, _ := strconv.Atoi(persistentKeepAliveString) // html form ensures that we get an integer
 		
-		
+		peerFile, peerServerConf := confs[confName].GenerateNewPeer(confFilePath, nickName, allowedIPs, dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
 
 		/*
 		data := map[string]interface{}{
@@ -82,7 +95,6 @@ func AddPeer(wireguardPath string, confs *wireguard.WireGuardConfigurations) fun
 		fmt.Println("name:",addressesToUse)
 		fmt.Println("name:",persistentKeepAlive)
 		*/
-		peerFile := wireguard.GenerateNewPeer(confFilePath, name, allowedIPs, dns, vpnEndpoint, confName, confs, addressesToUse, persistentKeepAlive)
 		qrPeerData := utils.QRCodeData(peerFile, 300)
 		str := base64.StdEncoding.EncodeToString(qrPeerData)
 		data := NewPeerData{
@@ -93,6 +105,9 @@ func AddPeer(wireguardPath string, confs *wireguard.WireGuardConfigurations) fun
 		c.JSON(http.StatusOK, data)
 		//c.Header("Content-Type", "text/plain")
 		//c.String(http.StatusOK, string(peerFile))
+		commands.WgReloadServer(confName)
+		utils.AppendTo(confFilePath, peerServerConf)
+		confs[confName] = s.LoadConfiguration(confFilePath, confName)
 	}
 }
 

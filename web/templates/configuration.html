@@ -3,35 +3,37 @@
     <title>{{ .confName }} - WireGuard Monitor </title>
 </head>
 <body>
-    <h2> {{ .interface.Name }} </h2>
+    <h2> {{ .configuration.NickName }} </h2>
     <table>
         <thead>
             <tr>
                 <th>Public Key</th>
                 <th>IPAddress</th>
                 <th>Listen Port</th>
+                <th>Interface</th>
                 <th>Data Info</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>{{ .interface.PublicKey }}</td>
-                <td>{{ .interface.Address }}</td>
-                <td>{{ .interface.ListenPort }}</td>
+                <td>{{ .configuration.PublicKey }}</td>
+                <td>{{ .configuration.Address }}</td>
+                <td>{{ .configuration.ListenPort }}</td>
+                <td>{{ .configuration.NetworkInfo.Name }}</td>
                 <td> ***** </td>
             </tr>
         </tbody>
     </table>
 
-    <h4>Total Clients: {{ len .interface.Peers }}</h4>
+    <h4>Total Clients: {{ len .configuration.Peers }}</h4>
 
     <div id="peers", class="grid-container">
-        {{ range $index, $peer := .interface.Peers }}
+        {{ range $index, $peer := .configuration.Peers }}
         <div class="peer">
             <details>
                 <summary>
                     <span id="{{ $peer.PublicKey }}-index" aria-busy="true">
-                        Peer: {{ $peer.Name }}
+                        Peer: {{ $peer.NickName }}
                     </span>
                     <span id="{{ $peer.PublicKey }}-status" class="peerStatus">
                         <span class="statusDot offline"></span>
@@ -80,16 +82,16 @@
                 <input type="text" id="name" name="name" value="Kindly Salad">
                 
                 <label for="allowedIPs">allowedIPs:</label>
-                <input type="text" id="allowedIPs" name="allowedIPs" value="10.0.0.1" required>
+                <input type="text" id="allowedIPs" name="allowedIPs" value="Peer's VPN IPs (required)" required>
                 
                 <label for="dns">DNS:</label>
                 <input type="text" id="dns" name="dns" value="1.1.1.1">
 
                 <label for="vpnEndpoint">Endpoint:</label>
-                <input type="text" id="vpnEndpoint" name="vpnEndpoint" value="my-vpn-server.net" required>
+                <input type="text" id="vpnEndpoint" name="vpnEndpoint" value="my-vpn-server.net (required)" required>
 
                 <label for="addressesToUse">Addresses to Use:</label>
-                <input type="text" id="addressesToUse" name="addressesToUse" value="0.0.0.0/0,::/0" required>
+                <input type="text" id="addressesToUse" name="addressesToUse" value="0.0.0.0/0,::/0 (required)" required>
                 
                 <label for="persistentKeepAlive">Persistent Keep Alive:</label>
                 <input type="int" id="persistentKeepAlive" name="persistentKeepAlive" value=25 pattern="[0-9]+">
@@ -102,8 +104,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        fetchUpdateInterface("{{ .interface.Name }}");
-        setInterval(function(){fetchUpdateInterface("{{ .interface.Name }}");}, 5000);
+        fetchUpdateInterface("{{ .configuration.ConfName }}");
+        setInterval(function(){fetchUpdateInterface("{{ .configuration.ConfName }}");}, 5000);
     });
 
     // show new peer form
@@ -122,7 +124,10 @@
 
         event.preventDefault();
         // Confirm submission with a dialog
-        var confirmed = confirm("Are you sure you want to create a new peer? It will modify this interface's .conf file and reload the server in the background");
+        var confirmed = confirm(
+            `Are you sure you want to create a new peer?\n 
+            It will modify this interface's .conf file and reload the server in the background\n`
+            );
         if (!confirmed) {
             // If not confirmed, prevent the form submission
             return false;
@@ -130,7 +135,7 @@
         var formData = new FormData(document.getElementById("formForNewPeer"));
         // If confirmed, allow the form submission
         closeElement("newPeerForm")
-        fetch("/api/configurations/{{ .interface.Name }}/newPeer", {
+        fetch("/api/configurations/{{ .configuration.ConfName }}/newPeer", {
             method: "POST",
             body: formData,
         })
@@ -142,10 +147,11 @@
             };
 
             // Send the data to the popup window
-            var popupWindow = window.open("/configurations/{{ .interface.Name }}/newPeer", "ResizablePopup", "resizable=yes,scrollbars=yes,width=850,height=350");            
+            var popupWindow = window.open("/configurations/{{ .configuration.ConfName }}/newPeer", "ResizablePopup", "resizable=yes,scrollbars=yes,width=850,height=350");            
             setTimeout(function () {
                 // Send the data to the popup window
                 popupWindow.postMessage({ popupData: senddata }, '*');
+                location.reload()
             }, 500);
         })
         .catch(error => {
