@@ -251,11 +251,12 @@ func (conf *Configuration) Refresh() {
 	}
 }
 
-func (conf *Configuration) GenerateNewPeer(configurationPath string, peerNickName string, allowedIPs []string, dns string, vpnEndpoint string, addressesToUse []string, persistentKeepAlive int) []byte{
+// returns the peer configuration file and the peer's server configuration in that order
+func (conf *Configuration) GenerateNewPeer(configurationPath string, peerNickName string, allowedIPs []string, dns string, vpnEndpoint string, addressesToUse []string, persistentKeepAlive int) ([]byte, []byte){
 	privateKey, publicKey := c.GenerateKeyPair()
 	peer := NewPeer(peerNickName, publicKey, privateKey, allowedIPs, conf)
-	out := peer.ConfFileOut(dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
-
+	peerConf := peer.ConfFileOut(dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
+	peerServerConf := peer.ServerConfFileOut()
 	/*
 	sanatizedKey := utils.SanatizeKey(peer.PublicKey)
 	peerFolderPath := "web/createdPeers/"+sanatizedKey
@@ -268,7 +269,7 @@ func (conf *Configuration) GenerateNewPeer(configurationPath string, peerNickNam
 	//ReloadServer(confName) reload the wireguard server in the background
 	
 	//"web/qrcodes/qrcode"+name+".png"
-	return out
+	return peerConf, peerServerConf
 }
 
 // Return how the server is represented in the server's .conf file.

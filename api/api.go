@@ -13,6 +13,7 @@ import (
 	//"github.com/jcocozza/wg-monitor/utils"
 	"github.com/jcocozza/wg-monitor/utils"
 	s "github.com/jcocozza/wg-monitor/wireguard/structs"
+	"github.com/jcocozza/wg-monitor/wireguard/commands"
 )
 type WgConfig map[string]*s.Configuration
 
@@ -69,7 +70,7 @@ func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 		persistentKeepAliveString := c.PostForm("persistentKeepAlive")
 		persistentKeepAlive, _ := strconv.Atoi(persistentKeepAliveString) // html form ensures that we get an integer
 		
-		peerFile := confs[confName].GenerateNewPeer(confFilePath, nickName, allowedIPs, dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
+		peerFile, peerServerConf := confs[confName].GenerateNewPeer(confFilePath, nickName, allowedIPs, dns, vpnEndpoint, addressesToUse, persistentKeepAlive)
 
 		/*
 		data := map[string]interface{}{
@@ -104,6 +105,9 @@ func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 		c.JSON(http.StatusOK, data)
 		//c.Header("Content-Type", "text/plain")
 		//c.String(http.StatusOK, string(peerFile))
+		commands.WgReloadServer(confName)
+		utils.AppendTo(confFilePath, peerServerConf)
+		confs[confName] = s.LoadConfiguration(confFilePath, confName)
 	}
 }
 
