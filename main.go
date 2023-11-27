@@ -1,9 +1,12 @@
 package main
 
 import (
-    "os"
+	"embed"
 	"fmt"
+	"html/template"
+	"io/fs"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 
@@ -18,6 +21,9 @@ type NavLink struct {
     Status *structs.NetworkInterface
 }
 
+
+//go:embed web/static/* web/templates/*
+var content embed.FS
 
 func initWGMonitor(wireguardPath string) api.WgConfig {
     wgConfs := wireguard.LoadWireGuard(wireguardPath)
@@ -57,8 +63,25 @@ func main() {
     router := gin.Default()
     router.Use(SetNavLinks(wgConfs))
     
-    router.LoadHTMLGlob("web/templates/*")
-    router.Static("/static", "web/static")
+    //router.LoadHTMLGlob("web/templates/*")
+    //router.Static("/static", "web/static")
+
+
+    // Load templates
+	htmlTemplate, err := template.New("").ParseFS(content, "web/templates/*")
+	if err != nil {
+		fmt.Println("Error parsing templates:", err)
+		return
+	}
+	router.SetHTMLTemplate(htmlTemplate)
+    
+	// Serve static files
+	staticFS, err := fs.Sub(content, "web/static")
+	if err != nil {
+		fmt.Println("Error getting subdirectory:", err)
+		return
+	}
+	router.StaticFS("/static", http.FS(staticFS))
 
     // PAGES
     router.GET("/", func(c *gin.Context) {
