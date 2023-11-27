@@ -1,11 +1,9 @@
 package main
 
 import (
+    "os"
 	"fmt"
-	//"log/slog"
 	"net/http"
-
-	//"os"
 
 	"github.com/gin-gonic/gin"
 
@@ -23,8 +21,6 @@ type NavLink struct {
 
 func initWGMonitor(wireguardPath string) api.WgConfig {
     wgConfs := wireguard.LoadWireGuard(wireguardPath)
-    //fmt.Println(wgConfs["utun3"])
-    fmt.Println(wgConfs["wg0"].Peers)
     return wgConfs
 }
 
@@ -41,7 +37,19 @@ func SetNavLinks(configurations api.WgConfig) gin.HandlerFunc {
 }
 
 func main() {
-    wireguardPath := "/usr/local/etc/wireguard/" //os.Args[1]
+
+    var wireguardPath string
+    var pathExists bool
+    wireguardPath, pathExists = os.LookupEnv("WIREGUARD_PATH")
+
+    if !pathExists {
+        if len(os.Args) > 1 {
+            wireguardPath = os.Args[1]
+        } else {
+            // default wireguard path
+            wireguardPath = "/usr/local/etc/wireguard/"
+        }
+    }
 
     wgConfs := initWGMonitor(wireguardPath)
 
@@ -70,12 +78,6 @@ func main() {
         confName := c.Param("confName")
         configuration := wgConfs[confName]
         
-        //iface := wgConfs [confName]
-        //iface := wireguardOld.ExtractInterface(interfaces, confName)
-
-        //for _,peer := range iface.Peers{
-        //    peer.CheckMetaStatus()
-        //}
         c.HTML(http.StatusOK, "configuration.html", gin.H{
             "confName" : confName,
             "configuration" : configuration,
