@@ -1,84 +1,163 @@
 {{ template "header.html" .}}
 <head>
-    <title>{{ .interfaceName }} - WireGuard Monitor </title>
+    <title>{{ .confName }} - WireGuard Monitor </title>
 </head>
 <body>
-    <h2> {{ .interface.Name }}</h2>
+    <h2> {{ .configuration.NickName }} </h2>
     <table>
         <thead>
             <tr>
                 <th>Public Key</th>
                 <th>IPAddress</th>
                 <th>Listen Port</th>
+                <th>Interface</th>
                 <th>Data Info</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>{{ .interface.PublicKey }}</td>
-                <td>{{ .interface.IPAddress }}</td>
-                <td>{{ .interface.ListeningPort }}</td>
+                <td>{{ .configuration.PublicKey }}</td>
+                <td>{{ .configuration.Address }}</td>
+                <td>{{ .configuration.ListenPort }}</td>
+                <td>{{ .configuration.NetworkInfo.Name }}</td>
                 <td> ***** </td>
             </tr>
         </tbody>
     </table>
 
-    <h4>Total Clients: {{ len .interface.Peers }}</h4>
+    <h4>Total Clients: {{ len .configuration.Peers }}</h4>
 
     <div id="peers", class="grid-container">
-        {{ range $index, $peer := .interface.Peers }}
+        {{ range $index, $peer := .configuration.Peers }}
         <div class="peer">
             <details>
                 <summary>
                     <span id="{{ $peer.PublicKey }}-index" aria-busy="true">
-                        Peer: {{ $index }}
+                        Peer: {{ $peer.NickName }}
                     </span>
-                    <span id="{{ $peer.PublicKey }}-MetaStatus" class="peerStatus">
+                    <span id="{{ $peer.PublicKey }}-status" class="peerStatus">
                         <span class="statusDot offline"></span>
                     </span><br>
                     <div class="transfer-info">
                         <div class="sent">
-                            <span id="{{ $peer.PublicKey }}-sent">{{ $peer.Sent }}</span> <span style="color: purple;">&#8682;</span> 
+                            <span id="{{ $peer.PublicKey }}-sent">{{ $peer.Info.Transfer.Sent }}</span> <span style="color: purple;">&#8682;</span> 
                         </div>
-                        <div class="recieved">
-                            <span id="{{ $peer.PublicKey }}-recieved">{{ $peer.Recieved }}</span> <span style="color: blue;">&#8681;</span> 
+                        <div class="received">
+                            <span id="{{ $peer.PublicKey }}-received">{{ $peer.Info.Transfer.Received }}</span> <span style="color: blue;">&#8681;</span> 
                         </div>
                     </div>
                 </summary>
 
-                <div class="peer-info-container">
+                <pre class="peer-info-container">
                     <div class="publickey">
                         Public Key: <span id="{{ $peer.PublicKey }}-publickey">{{ $peer.PublicKey }}</span>
                     </div>
                     <div class="latesthandshake">
-                        Latest Handshake: <span id="{{ $peer.PublicKey }}-latesthandshake">{{ $peer.LatestHandshake }}</span>
+                        Latest Handshake: <span id="{{ $peer.PublicKey }}-latesthandshake">{{ $peer.Info.LatestHandshake }}</span>
                     </div>
                     <div class="endpoint">
-                        Endpoint: <span id="{{ $peer.PublicKey }}-endpoint">{{ $peer.EndPoint }}</span>
+                        Endpoint: <span id="{{ $peer.PublicKey }}-endpoint">{{ $peer.Info.EndPoint }}</span>
                     </div>
                     <div class="allowedips">
                         Allowed IPs: <span id="{{ $peer.PublicKey }}-allowedips">{{ $peer.AllowedIPs }}</span>
                     </div>
-                </div>
+                </pre>
             </details>
         </div>
         {{ end }}
     </div>
-    <input type="checkbox" role="switch" id="toggle-switch" onclick="toggleClass('grid-container', 'new-class', 'peers')">
-    <label for="toggle-switch"> Row-Grid </label>
+
+    <div class="options-container">
+        <input type="checkbox" role="switch" id="toggle-switch" onclick="toggleClass('grid-container', 'new-class', 'peers')">
+        <label for="toggle-switch"> Row-Grid </label>
+
+        <button id="showFormBtn" class="custom-button" role="button">New Peer</button>
+    </div>
+    <div id="newPeerForm" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closeElement('newPeerForm')">&times;</span>
+            <form id="formForNewPeer" method="post">
+                <!-- Your form fields go here -->
+                <label for="name">name:</label>
+                <input type="text" id="name" name="name" value="Kindly Salad">
+                
+                <label for="allowedIPs">allowedIPs:</label>
+                <input type="text" id="allowedIPs" name="allowedIPs" value="Peer's VPN IPs (required)" required>
+                
+                <label for="dns">DNS:</label>
+                <input type="text" id="dns" name="dns" value="1.1.1.1">
+
+                <label for="vpnEndpoint">Endpoint:</label>
+                <input type="text" id="vpnEndpoint" name="vpnEndpoint" value="my-vpn-server.net (required)" required>
+
+                <label for="addressesToUse">Addresses to Use:</label>
+                <input type="text" id="addressesToUse" name="addressesToUse" value="0.0.0.0/0,::/0 (required)" required>
+                
+                <label for="persistentKeepAlive">Persistent Keep Alive:</label>
+                <input type="int" id="persistentKeepAlive" name="persistentKeepAlive" value=25 pattern="[0-9]+">
+
+                <input type="submit" value="Submit" onclick="return confirmSubmission()">
+            </form>
+        </div>
+    </div>
 </body>
 
 <script>
-    /*
     document.addEventListener('DOMContentLoaded', function() {
-        var interfaceName = document.getElementById("peerStatusButton").getAttribute("data-interface-name")
-        //getPeerMetaStatus(interfaceName)
-        setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
-    });*/
-    document.addEventListener('DOMContentLoaded', function() {
-        getPeerMetaStatus("{{ .interface.Name }}");
-        setInterval(function(){getPeerMetaStatus("{{ .interface.Name }}");}, 5000);
+        fetchUpdateInterface("{{ .configuration.ConfName }}");
+        setInterval(function(){fetchUpdateInterface("{{ .configuration.ConfName }}");}, 5000);
     });
+
+    // show new peer form
+    document.getElementById('showFormBtn').addEventListener('click', function() {
+        document.getElementById('newPeerForm').style.display = 'block';
+    });
+
+
+    function confirmSubmission() {
+        var form = document.getElementById("formForNewPeer");
+        if (!form.checkValidity()) {
+            // If the form is not valid, do not submit
+            form.reportValidity();
+            return false;
+        }
+
+        event.preventDefault();
+        // Confirm submission with a dialog
+        var confirmed = confirm(
+            `Are you sure you want to create a new peer?\n 
+            It will modify this interface's .conf file and reload the server in the background\n`
+            );
+        if (!confirmed) {
+            // If not confirmed, prevent the form submission
+            return false;
+        }
+        var formData = new FormData(document.getElementById("formForNewPeer"));
+        // If confirmed, allow the form submission
+        closeElement("newPeerForm")
+        fetch("/api/configurations/{{ .configuration.ConfName }}/newPeer", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            var senddata = {
+                textData: data.textData,
+                qrCodeData: data.qrCodeData
+            };
+
+            // Send the data to the popup window
+            var popupWindow = window.open("/configurations/{{ .configuration.ConfName }}/newPeer", "ResizablePopup", "resizable=yes,scrollbars=yes,width=850,height=350");            
+            setTimeout(function () {
+                // Send the data to the popup window
+                popupWindow.postMessage({ popupData: senddata }, '*');
+                location.reload()
+            }, 500);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    }
 </script>
 
 {{ template "footer.html" .}}

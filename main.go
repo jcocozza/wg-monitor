@@ -1,6 +1,7 @@
 package main
 
 import (
+    "os"
 	"fmt"
 	"net/http"
 
@@ -8,45 +9,61 @@ import (
 
 	"github.com/jcocozza/wg-monitor/api"
 	"github.com/jcocozza/wg-monitor/wireguard"
+	"github.com/jcocozza/wg-monitor/wireguard/structs"
 )
 
 type NavLink struct {
     Text string
     URL  string
+    Status *structs.NetworkInterface
 }
 
-var templateVariable string // The variable that will be updated
 
+func initWGMonitor(wireguardPath string) api.WgConfig {
+    wgConfs := wireguard.LoadWireGuard(wireguardPath)
+    return wgConfs
+}
 
 // middleware for navlinks based on the configurations that are set up 
-func SetNavLinks() gin.HandlerFunc {
+func SetNavLinks(configurations api.WgConfig) gin.HandlerFunc {
     return func (c *gin.Context) {
         var navLinks []NavLink
 
-        interfaceNames := wireguard.GetInterfaceNames()
-
-        for _, interfaceName := range interfaceNames {
-            navLinks = append(navLinks, NavLink{interfaceName, fmt.Sprintf("/configurations/%s", interfaceName)})
+        for confName, conf := range configurations {
+            navLinks = append(navLinks, NavLink{confName, fmt.Sprintf("/configurations/%s", confName), conf.NetworkInfo})
         }
         c.Set("navLinks", navLinks)
     }
 }
 
 func main() {
+
+    var wireguardPath string
+    var pathExists bool
+    wireguardPath, pathExists = os.LookupEnv("WIREGUARD_PATH")
+
+    if !pathExists {
+        if len(os.Args) > 1 {
+            wireguardPath = os.Args[1]
+        } else {
+            // default wireguard path
+            wireguardPath = "/usr/local/etc/wireguard/"
+        }
+    }
+
+    wgConfs := initWGMonitor(wireguardPath)
+
     // Initialize the Gin router
     router := gin.Default()
-    router.Use(SetNavLinks())
+    router.Use(SetNavLinks(wgConfs))
     
     router.LoadHTMLGlob("web/templates/*")
     router.Static("/static", "web/static")
-
-    interfaces := wireguard.GetWgInfo()
 
     // PAGES
     router.GET("/", func(c *gin.Context) {
 
         c.HTML(http.StatusOK, "home.html", gin.H{
-            "interfaces" : interfaces,
             "navLinks" : c.MustGet("navLinks").([]NavLink),
         })
     })
@@ -57,27 +74,30 @@ func main() {
         })
     })
 
-    router.GET("/configurations/:interfaceName", func (c *gin.Context)  {
-        interfaceName := c.Param("interfaceName")
-
-        iface := wireguard.ExtractInterface(interfaces, interfaceName)
-
-        //for _,peer := range iface.Peers{
-        //    peer.CheckMetaStatus()
-        //}
-
+    router.GET("/configurations/:confName", func (c *gin.Context)  {
+        confName := c.Param("confName")
+        configuration := wgConfs[confName]
+        
         c.HTML(http.StatusOK, "configuration.html", gin.H{
-            "interfaceName" : interfaceName,
-            "interface" : iface,
+            "confName" : confName,
+            "configuration" : configuration,
             "navLinks" : c.MustGet("navLinks").([]NavLink),
         })
     })
 
-    // API ROUTES
-    router.GET("/api/getInterfaces", api.GetWireGuardServerInfo)
-    router.GET("/api/configurations/:interfaceName", api.CheckPeerMetaStatus)
-    
-    // Run the server
-    router.Run("10.5.5.1:8080")
 
-}
+    router.GET("/configurations/:confName/newPeer", func(c *gin.Context) {
+        c.HTML(http.StatusOK, "newPeerPopup.html", gin.H{})
+    })
+
+    // API ROUTES
+    router.GET("/api/update/configurations/:configurationName", api.UpdateConfiguration(wgConfs))
+    router.GET("/api/update/networks/all", api.UpdateNetworks(wgConfs))
+    router.POST("/api/configurations/:confName/newPeer", api.AddPeer(wireguardPath, wgConfs))
+    router.GET("/api/configurations/:confName/up", api.ConfigurationUp(wireguardPath, wgConfs))
+    router.GET("/api/configurations/:confName/down", api.ConfigurationDown(wireguardPath, wgConfs))
+
+    // Run the server
+    router.Run(":8080")
+
+} 

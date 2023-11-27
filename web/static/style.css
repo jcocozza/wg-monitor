@@ -86,8 +86,8 @@
 .sent {
   grid-area: sent;
 }
-.recieved {
-  grid-area: recieved;
+.received {
+  grid-area: received;
 }
 
 .endpoint {
@@ -96,4 +96,53 @@
 
 .allowedips {
   grid-area: allowedips;
+}
+
+
+.popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #ccc;
+  padding: 15px;
+  /*background-color: rgba(200, 4, 254, 0);*/
+  z-index: 1;
+}
+
+.popup-content {
+  width: 300px;
+}
+
+.close {
+  float: right;
+  cursor: pointer;
+}
+
+pre.peer-info-container {
+  white-space: nowrap; /* Prevents line breaks */
+  /*font-family: 'Courier New', monospace; /* Optional: Use a monospaced font for better alignment */
+  /*background-color: #18232C; /* Set your desired background color */
+}
+
+pre.peer-info-container div {
+  margin-bottom: 10px; /* Adjust as needed for spacing between items */
+}
+
+.custom-button {
+  max-width: 200px; /* Set a maximum width for the button */
+  padding: 10px; /* Add padding for better appearance */
+  /* Add any other styling you need */
+}
+
+.options-container {
+  text-align: right;
+}
+
+.side-by-side-container {
+  display: flex; /* Use flexbox */
+}
+.side-by-side-container a {
+  margin-right: 10px; /* Adjust as needed */
 }

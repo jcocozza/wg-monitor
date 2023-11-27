@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Thank you Pico CSS."/>
+        <!-- Pico.css (Classless version) -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.classless.min.css"/>
+        <link rel="stylesheet" href="/static/style.css"/>
+        <title> New Peer - WireGuard Monitor </title>
+    </head>
+<body>
+    <table>
+        <tr>
+            <td>
+                <pre id="createdFile"></pre>
+                <button onclick="downloadFile()">Download File</button>
+            </td>
+            <td>
+                <div id="createdqrCode"></div>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        // Listen for messages from the parent window
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.popupData) {
+                // Use the received data as needed
+                document.getElementById("createdFile").style.display = "block";
+                document.getElementById('createdFile').innerHTML = event.data.popupData.textData;
+                document.getElementById('createdqrCode').innerHTML = "<img src='data:image/png;base64," + event.data.popupData.qrCodeData + "' alt='QR Code'>";
+            }
+        });
+
+        function downloadFile() {
+            var textData = document.getElementById('createdFile').textContent;
+            var blob = new Blob([textData], { type: 'text/plain' });
+
+            var a = document.createElement('a');
+            a.href = window.URL.createObjectURL(blob);
+            a.download = 'file.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

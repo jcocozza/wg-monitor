@@ -4,36 +4,47 @@
         <script src="/static/scripts.js"></script>
     </head>
     <body>
-        {{range .interfaces}}
-        <div class="interface" id="interface-{{ .Name }}">
-            <h1> {{ .Name }} -- {{ .PublicKey }}</h1>
-            <h2> Listening On: {{ .ListeningPort }}</h2>
-            <table role="grid">
-                <thead>
-                    <tr>
-                        <th>PublicKey</th>
-                        <th>Endpoint</th>
-                        <th>AllowedIPs</th>
-                        <th>LatestHandshake</th>
-                        <th>Transfer</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .Peers}}
-                    <tr>
-                        <td id="peer-{{ .PublicKey }}-publickey">{{ .PublicKey }}</td>
-                        <td id="peer-{{ .PublicKey }}-endpoint">{{ .EndPoint }}</td>
-                        <td id="peer-{{ .PublicKey }}-allowedips">{{ .AllowedIPs }}</td>
-                        <td id="peer-{{ .PublicKey }}-latesthandshake">{{ .LatestHandshake }}</td>
-                        <td id="peer-{{ .PublicKey }}-transfer">{{ .Transfer }}</td>
-                    </tr>
-                    {{ end }}
-                </tbody>
-            </table>
+        <h1>Welcome to WireGuard Monitor</h1>
+
+        <weak>Configurations</weak>
+        <br>
+        {{range .navLinks}}
+        <div class="side-by-side-container">
+
+            <a href="{{ .URL }}">{{ .Text }}
+                <span id="{{ .Text }}-status-home" class="peerStatus">
+                    <span class="statusDot offline"></span>
+                </span>
+            </a>
+
+            <fieldset>
+                <label for="switch">
+                    <input type="checkbox" id="{{ .Text }}-switch" name="switch" role="switch" onchange="handleSwitchChange('{{ .Text }}')">
+                </label>
+            </fieldset>
         </div>
-        {{ end }}
+        <br>
+        {{end}}
+
    </body>
+
    <script>
-    setInterval(getInterfaces, 5000)
+        function handleSwitchChange(switchName) {
+            var isChecked = document.getElementById(switchName + '-switch').checked;
+
+            // Run custom command based on the switch state
+            if (isChecked) {
+                // Run the command when the switch is turned on
+                alert('Running custom command for ' + switchName + ': ON');
+                fetch("/api/configurations/"+switchName+"/up");
+                // You can replace the alert with an actual command execution
+            } else {
+                // Run the command when the switch is turned off
+                alert('Running custom command for ' + switchName + ': OFF');
+                fetch("/api/configurations/"+switchName+"/down");
+                // You can replace the alert with an actual command execution
+            }
+        }
+    </script>
    </script>
 {{ template "footer.html" .}}
