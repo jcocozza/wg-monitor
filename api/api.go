@@ -19,7 +19,6 @@ func UpdateConfiguration(confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		configurationName := c.Param("configurationName")
 		slog.Info("[API] Update Configuration: "+configurationName)
-		// the configuration name is the wrong thing???
 		if conf, ok := confs[configurationName]; ok && conf != nil {
 			conf.Refresh()
 			c.JSON(http.StatusOK, conf.Peers) //return the desired interface data from <confName>
@@ -30,7 +29,7 @@ func UpdateConfiguration(confs WgConfig) func(c *gin.Context) {
 	}
 }
 
-// this function will replate UpdateConfigurations()
+// Update the network interfaces associated with configurations
 func UpdateNetworks(confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		slog.Info("[API] Updating networks...")
@@ -49,6 +48,7 @@ type NewPeerData struct {
 	QRCodeData  string `json:"qrCodeData"`
 }
 
+// Add a peer to the configuration file; reload the server
 func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		confName := c.Param("confName")
@@ -88,7 +88,7 @@ func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 	}
 }
 
-
+// start a server
 func ConfigurationUp(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		confName := c.Param("confName")
@@ -99,6 +99,7 @@ func ConfigurationUp(wireguardPath string, confs WgConfig) func(c *gin.Context) 
 	}
 }
 
+// stop a server
 func ConfigurationDown(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		confName := c.Param("confName")

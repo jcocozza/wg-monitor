@@ -4,6 +4,7 @@ import (
 	"log/slog"
 )
 
+// generates a qr code image, writes it to a path (not used)
 func GenerateQRCode(path string, data []byte) {
 	slog.Debug("Generating QR code...")
 	err := qrcode.WriteFile(string(data), qrcode.Medium, 256, path)
@@ -13,6 +14,7 @@ func GenerateQRCode(path string, data []byte) {
 	}
 }
 
+// Generate QR code data
 func QRCodeData(data []byte, size int) []byte {
 	slog.Debug("Generating QR code data...")
 	qrCode, err := qrcode.New(string(data), qrcode.Medium)

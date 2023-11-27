@@ -21,7 +21,7 @@ func WgSpecific(interfaceName string) []byte {
 	return output
 }
 
-
+// run wg show
 func WgShow() []byte {
 	cmd := exec.Command("wg", "show")
 	output, err := cmd.CombinedOutput()
