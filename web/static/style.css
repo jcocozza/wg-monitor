@@ -139,3 +139,10 @@ pre.peer-info-container div {
 .options-container {
   text-align: right;
 }
+
+.side-by-side-container {
+  display: flex; /* Use flexbox */
+}
+.side-by-side-container a {
+  margin-right: 10px; /* Adjust as needed */
+}

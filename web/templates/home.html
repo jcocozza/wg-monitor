@@ -5,5 +5,46 @@
     </head>
     <body>
         <h1>Welcome to WireGuard Monitor</h1>
+
+        <weak>Configurations</weak>
+        <br>
+        {{range .navLinks}}
+        <div class="side-by-side-container">
+
+            <a href="{{ .URL }}">{{ .Text }}
+                <span id="{{ .Text }}-status-home" class="peerStatus">
+                    <span class="statusDot offline"></span>
+                </span>
+            </a>
+
+            <fieldset>
+                <label for="switch">
+                    <input type="checkbox" id="{{ .Text }}-switch" name="switch" role="switch" onchange="handleSwitchChange('{{ .Text }}')">
+                </label>
+            </fieldset>
+        </div>
+        <br>
+        {{end}}
+
    </body>
+
+   <script>
+        function handleSwitchChange(switchName) {
+            var isChecked = document.getElementById(switchName + '-switch').checked;
+
+            // Run custom command based on the switch state
+            if (isChecked) {
+                // Run the command when the switch is turned on
+                alert('Running custom command for ' + switchName + ': ON');
+                fetch("/api/configurations/"+switchName+"/up");
+                // You can replace the alert with an actual command execution
+            } else {
+                // Run the command when the switch is turned off
+                alert('Running custom command for ' + switchName + ': OFF');
+                fetch("/api/configurations/"+switchName+"/down");
+                // You can replace the alert with an actual command execution
+            }
+        }
+    </script>
+   </script>
 {{ template "footer.html" .}}

@@ -65,14 +65,19 @@ function UpdateNetworks(data){
     for (let confName in data) {
         let cStatus = data[confName];
         confStatus = document.getElementById(confName+"-status")
-
+        confStatusHome = document.getElementById(confName+"-status-home")
+        confStatuSwitch = document.getElementById(confName+"-switch")
         if (cStatus) {
             //loadingPeer.setAttribute("aria-busy", "false");
             confStatus.innerHTML = '<span class="statusDot online"></span>';
+            confStatusHome.innerHTML = '<span class="statusDot online"></span>';
+            confStatuSwitch.checked = true;
     
         } else {
             //loadingPeer.setAttribute("aria-busy", "false");
             confStatus.innerHTML = '<span class="statusDot offline"></span>';
+            confStatusHome.innerHTML = '<span class="statusDot offline"></span>';
+            confStatuSwitch.checked = false;
         }
     }
 }

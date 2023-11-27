@@ -86,7 +86,9 @@ func LoadConfiguration(configurationPath string, confName string) *Configuration
 
 		confAddressPrefix := "Address = "
 		if strings.HasPrefix(ln, confAddressPrefix) {
-			confAddress = strings.TrimSpace(strings.TrimPrefix(ln, confAddressPrefix))
+			confAddressTmp := strings.TrimSpace(strings.TrimPrefix(ln, confAddressPrefix))
+			confAddress = strings.Split(confAddressTmp, "/")[0] // 10.5.5.1/24 -> 10.5.5.1
+
 			slog.Info("[Configuration " + confName + "] Configuration Address: " + confAddress)
 		}
 

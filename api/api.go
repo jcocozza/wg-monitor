@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jcocozza/wg-monitor/utils"
+	w "github.com/jcocozza/wg-monitor/wireguard"
 	s "github.com/jcocozza/wg-monitor/wireguard/structs"
 	"github.com/jcocozza/wg-monitor/wireguard/commands"
 )
@@ -85,6 +86,27 @@ func AddPeer(wireguardPath string, confs WgConfig) func(c *gin.Context) {
 		commands.WgSyncConf(confName) // reload the wireguard configuration
 		confs[confName] = s.LoadConfiguration(confFilePath, confName) // reload the configuration from the wireguard server
 	}
+}
+
+
+func ConfigurationUp(wireguardPath string, confs WgConfig) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		confName := c.Param("confName")
+		confFilePath := wireguardPath+confName+".conf"
+		commands.WgQuickUp(confFilePath)
+
+		confs = w.LoadWireGuard(wireguardPath)
+	}
+}
+
+func ConfigurationDown(wireguardPath string, confs WgConfig) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		confName := c.Param("confName")
+		confFilePath := wireguardPath+confName+".conf"
+		commands.WgQuickDown(confFilePath)
+
+		confs = w.LoadWireGuard(wireguardPath)
+	}	
 }
 
 /* API call that also takes in an object

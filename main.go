@@ -94,9 +94,10 @@ func main() {
     router.GET("/api/update/configurations/:configurationName", api.UpdateConfiguration(wgConfs))
     router.GET("/api/update/networks/all", api.UpdateNetworks(wgConfs))
     router.POST("/api/configurations/:confName/newPeer", api.AddPeer(wireguardPath, wgConfs))
-    
-    // Run the server
-    //router.Run("143.229.244.67:8080")
-    router.Run("10.5.5.1:8080")
+    router.GET("/api/configurations/:confName/up", api.ConfigurationUp(wireguardPath, wgConfs))
+    router.GET("/api/configurations/:confName/down", api.ConfigurationDown(wireguardPath, wgConfs))
 
-}
+    // Run the server
+    router.Run(":8080")
+
+} 
